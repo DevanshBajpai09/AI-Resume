@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
 import { dummyResumeData } from '../assets/assets';
-import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, FileText, FolderIcon, GraduationCap, Sparkles, User } from 'lucide-react';
+import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react';
 import PersonalInfo from '../Component/personalInfo';
 import ResumePreview from '../Component/ResumePreview';
 import TemplateSelector from '../Component/TemplateSelector';
@@ -10,6 +10,7 @@ import ProfessionalSummary from '../Component/ProfessionalSummary';
 import ExperienceForm from '../Component/ExperienceForm';
 import EducationForm from '../Component/EducationForm';
 import ProjectForm from '../Component/ProjectForm';
+import SkillsForm from '../Component/SkillsForm';
 
 
 const ResumeBuilder = () => {
@@ -56,6 +57,27 @@ const ResumeBuilder = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExistingResume()
   },[])
+
+
+
+  const changeResumeVisibility = async()=>{
+    setresumeData({...resumedata, public:!resumedata.public})
+  }
+
+  const handleShare = async()=>{
+    const frontendUrl = window.location.href.split('/app/')[0]
+    const resumeUrl = frontendUrl + '/view/' + resumeId
+    if(navigator.share){
+      navigator.share({url:resumeUrl, text:"My Resume"})
+    }else{
+      alert("Share not supported in thsi browser")
+    }
+  }
+
+
+  const downloadResume = ()=>{
+    window.print()
+  }
   return (
     <div>
       <div className='max-w-7xl mx-auto px-4 py-6'>
@@ -111,8 +133,12 @@ const ResumeBuilder = () => {
                 {activeSection.id === 'Projects' && (
                   <ProjectForm data={resumedata.projects} onChange={(data)=>setresumeData(prev => ({...prev, projects: data}))} />
                 )}
+                 {activeSection.id === 'Skills' && (
+                  <SkillsForm data={resumedata.skills} onChange={(data)=>setresumeData(prev => ({...prev, skills: data}))} />
+                )}
 
               </div>
+              <button className='bg-linear-to-br from-green-100 to-green-200  ring-green-300 text-green-600 cursor-pointer ring hover:ring-green-400 transition-all rounded-md px-6 py-2 mt-6 text-sm'>Save Changes</button >
 
             </div>
 
@@ -120,8 +146,26 @@ const ResumeBuilder = () => {
 
           {/* Right panel preview */}
           <div className='lg:col-span-7 max-lg:mt-6'>
-            <div >
+            <div className='relative w-full'>
               {/* button */}
+              <div className='absolute bottom-3 left-0 right-0 flex items-center justify-end gap-2'>
+                {resumedata.public && (
+                  <button onClick={handleShare} className='flex items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-blue-100 to-blue-200 text-blue-600 rounded-lg ring-blue-300 hover:ring transition-colors'>
+
+                    <Share2Icon className='size-4'/> Share
+                  </button>
+                )}
+
+                <button onClick={changeResumeVisibility} className='flex items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-purple-100 to-purple-200 text-purple-600 rounded-lg ring-purple-300 hover:ring transition-colors'>
+                  {resumedata.public ? <EyeIcon className='size-4'/>:<EyeOffIcon className='size-4'/>}
+                  {resumedata.public ? "public" : "private"}
+                </button>
+
+                <button onClick={downloadResume} className='flex item-center gap-2 px-6 py-2 text-xs bg-linear-to-br from-green-100 to-green-200 text-green-600 rounded-lg ring-green-300 hover:ring transition-colors'>
+                  <DownloadIcon className='size-4'/> Download
+                </button>
+              </div>
+
 
             </div>
 
