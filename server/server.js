@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 import userRouter from "./routes/userRoute.js";
 import resumeRouter from "./routes/resumeRoute.js";
 import aiRouter from "./routes/aiRoute.js";
+import connectDB from "./config/db.js";
 
 
 dotenv.config()
