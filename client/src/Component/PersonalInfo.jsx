@@ -61,7 +61,7 @@ const PersonalInfo = ({data, onChange, removeBackground,setRemoveBackground}) =>
 
                     
                     </label>
-                    <input type={field.type} value={data?.[field.key] || ''} onChange={(e)=>handleChange(field.key, e.target.value)} className='mt-1 w-full px-3 py-2 border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm' placeholder={`Enter your ${field.label.toLowerCase()}`} required={field.required}/>
+                    <input type={field.type} value={data?.[field.key] || ''} onChange={(e)=>handleChange(field.key, e.target.value)} className='mt-1 w-full border border-gray-400 px-3 py-2 border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm' placeholder={`Enter your ${field.label.toLowerCase()}`} required={field.required}/>
 
                 </div>
             )

@@ -13,7 +13,13 @@ const Feature = () => {
                 </div>
                 <Title title="Build your resume" description="Our streamlined process heps you create a professional resume in minutes with intelligence AI-powered tools and features."/>
                 <div class="flex flex-col md:flex-row items-center justify-center xl:mt-10">
-                    <img class="max-w-2xl w-full" src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png" alt="" />
+                    <img
+    class="max-w-2xl w-full
+           transition-all duration-500 ease-out
+           hover:-translate-y-2 hover:scale-[1.02]"
+    src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png"
+    alt=""
+  />
                     <div class="space-y-6 px-4 md:px-0" >
                         <div onMouseEnter={() => setIsHover(0)}
                             onMouseLeave={() => setIsHover(null)} class={`flex items-center justify-center transition-colors ${isHover == 0 ? "border-violet-300 ring-offset-2 ring-1 ring-violet-300  bg-violet-100" : ""} rounded-xl py-4 pr-4 gap-6 max-w-md`}>
