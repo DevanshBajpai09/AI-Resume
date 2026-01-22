@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
 
 import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react';
-import PersonalInfo from '../Component/personalInfo';
+import PersonalInfo from '../Component/PersonalInfo';
 import ResumePreview from '../Component/ResumePreview';
 import TemplateSelector from '../Component/TemplateSelector';
 import ColorPicker from '../Component/ColorPicker';
