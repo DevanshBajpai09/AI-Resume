@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteResumeId, setDeleteResumeId] = useState(null);
 
-  const { user, token } = useSelector(state => state.auth)
+  const { token } = useSelector(state => state.auth)
 
 
   const navigate = useNavigate()
@@ -32,7 +32,7 @@ const Dashboard = () => {
       })
       setallResumes(data.resumes)
 
-    } catch {
+    } catch(error) {
       toast.error(error?.response?.data?.message || error.message)
 
     }
@@ -125,8 +125,9 @@ const Dashboard = () => {
 
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    
     loadallResumes()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return (
     <div>

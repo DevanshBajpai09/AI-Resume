@@ -42,6 +42,7 @@ const App = () => {
 
   useEffect(()=>{
     getUserData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
   return (
     <>

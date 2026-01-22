@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
-import { dummyResumeData } from '../assets/assets';
+
 import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react';
 import PersonalInfo from '../Component/personalInfo';
 import ResumePreview from '../Component/ResumePreview';
@@ -67,8 +67,9 @@ const ResumeBuilder = () => {
   const activeSection = section[activeSectionIndex]
 
   useEffect(()=>{
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+   
     loadExistingResume()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
 
 
