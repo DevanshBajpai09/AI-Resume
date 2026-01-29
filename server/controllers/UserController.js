@@ -5,6 +5,11 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import dotenv from 'dotenv'
 import Resume from "../models/ResumeModel.js"
+import crypto from "crypto"
+import resend from "../config/resend.js"
+import { isStrongPassword } from "../config/validatePassword.js"
+import verifyEmailTemplate from "../emails/verifyTemplate.js"
+import welcomeEmailTemplate from "../emails/welcomeEmailTemplate.js"
 
 dotenv.config()
 
@@ -28,6 +33,13 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" })
         }
 
+        if (!isStrongPassword(password)) {
+            return res.status(400).json({
+                message:
+                    "Password must be at least 8 characters and include uppercase, lowercase, number and special character"
+            })
+        }
+
         // check if user already exist
 
         const user = await User.findOne({ email })
@@ -40,22 +52,89 @@ export const registerUser = async (req, res) => {
         // create new user then hash password
 
         const hashedPassword = await bcrypt.hash(password, 10)
+        const verifyToken = crypto.randomBytes(32).toString("hex")
+
         const newUser = await User.create({
-            name, email, password: hashedPassword
+            name, email, password: hashedPassword, emailVerifyToken: verifyToken, emailVerifyTokenExpiry: Date.now() + 24 * 60 * 60 * 1000
+        })
+
+
+        const verifyUrl = `${process.env.FRONTEND_URL}/login?state=verify&token=${verifyToken}`
+
+
+        await resend.emails.send({
+            from: "Resume <onboarding@resend.dev>",
+            to: email,
+            subject: "Verify your email",
+            html: verifyEmailTemplate({
+                name,
+                verifyUrl,
+                logoUrl: "https://vqr4j1ulaxsrbwxr.public.blob.vercel-storage.com/logo.png"
+            })
         })
 
 
         // return succes message
-        const token = generateToken(newUser._id)
-        newUser.password = undefined
 
 
-        return res.status(201).json({ message: "User create successfully", token, user: newUser })
+        return res.status(201).json({ message: "Verification link sent to email" })
     } catch (error) {
         return res.status(400).json({ message: error.message })
 
     }
 
+}
+
+
+
+
+// GET /API/USERS/VERIFY-EMAIL
+// CONTROLLER FUNCTION TO VERIFY EMAIL
+
+
+export const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.query
+
+        const user = await User.findOne({
+            emailVerifyToken: token,
+            emailVerifyTokenExpiry: { $gt: Date.now() }
+        })
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token" })
+        }
+        
+
+        user.isVerified = true
+        user.emailVerifyToken = undefined
+        user.emailVerifyTokenExpiry = undefined
+
+        
+
+
+        await user.save()
+
+        await resend.emails.send({
+            from: "Resume <onboarding@resend.dev>",
+
+            to: user.email,
+            subject: "Welcome to resume 🎉",
+            html: welcomeEmailTemplate({
+                name: user.name,
+                logoUrl: "https://vqr4j1ulaxsrbwxr.public.blob.vercel-storage.com/logo.png"
+            })
+        })
+
+
+        return res.status(200).json({
+            message: "Email verified successfully. Please login."
+        });
+
+    } catch (error) {
+        return res.status(400).json({ message: error.message })
+
+    }
 }
 
 
@@ -80,6 +159,9 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" })
         }
 
+
+
+
         // check if password is correct
 
         const isMatch = await user.comparePassword(password);
@@ -88,9 +170,16 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" });
         }
 
+        if (!user.isVerified) {
+            return res.status(403).json({ message: "Please verify your email first" })
+        }
+
+        
+
         // return succes message
         const token = generateToken(user._id)
         user.password = undefined
+        
 
 
 
@@ -110,7 +199,7 @@ export const loginUser = async (req, res) => {
 export const getUserID = async (req, res) => {
     try {
         const userId = req.userId
-        
+
 
 
         // check if user exist
@@ -139,15 +228,15 @@ export const getUserID = async (req, res) => {
 // Get /app/users/resumes
 // constroller function to get user resume
 
-export const getUserResume = async(req,res)=>{
-    try{
+export const getUserResume = async (req, res) => {
+    try {
         const userId = req.userId
         // return user resumes
-        const resumes = await Resume.find({userId})
-        return res.status(200).json({resumes})
+        const resumes = await Resume.find({ userId })
+        return res.status(200).json({ resumes })
 
-    }catch(error){
-        return res.status(401).json({message:error.message})
+    } catch (error) {
+        return res.status(401).json({ message: error.message })
     }
 }
 

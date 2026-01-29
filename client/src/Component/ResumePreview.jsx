@@ -3,7 +3,13 @@ import ModernTemplate from '../Component/templates/ModernTemplate'
 import ClassicTemplate from '../Component/templates/ClassicTemplate'
 import MinimalTemplate from '../Component/templates/MinimalTemplate'
 import MinimalImageTemplate from '../Component/templates/MinimalImageTemplate'
+import FuturisticTemplate  from '../Component/templates/FuturisticLayout'
+import CreativeTemplate from '../Component/templates/MinimalCreativeLayout'
+import ElegantTemplate from '../Component/templates/ElegantProfessionalLayout'
+
+
 const ResumePreview = ({ data, template, accentColor, classes = "" }) => {
+
   const RenderTemplate = () => {
     switch (template) {
       case "modern":
@@ -12,6 +18,12 @@ const ResumePreview = ({ data, template, accentColor, classes = "" }) => {
         return <MinimalTemplate data={data} accentColor={accentColor} />
       case "minimal-image":
         return <MinimalImageTemplate data={data} accentColor={accentColor} />
+      case "futuristic":
+        return <FuturisticTemplate data={data} accentColor={accentColor} />
+      case "creative":
+        return <CreativeTemplate data={data} accentColor={accentColor} />
+      case "elegant":
+        return <ElegantTemplate data={data} accentColor={accentColor} />
 
 
 
@@ -21,45 +33,15 @@ const ResumePreview = ({ data, template, accentColor, classes = "" }) => {
     }
   }
   return (
+    
     <div className='w-full bg-gray-100'>
       <div id='resume-preview' className={"border border-gray-200 print-shadow-none print-border-none" + classes}>
+      
         {RenderTemplate()}
 
-      </div>
-      <style jsx>
-        {`
-        @page{
-        size: letter;
-        margin:0;
-        }
-
-        @media print {
-        html, body {
-        width:8.5in;
-        height:11in;
-        overflow:hidden;
-        }
-        body * {
-        visibility: hidden;
-        }
-        #resume-preview, #resume-preview * {
-        visibility: visible;
-        }
-        #resume-preview {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width:100%;
-        height:auto;
-        margin:0;
-        padding:0;
-        box-shadow:none !important;
-        border:none !important;
-        }
-        }
-        `}
-
-      </style>
+      
+    </div>
+    
     </div>
   )
 }

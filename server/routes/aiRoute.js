@@ -1,8 +1,9 @@
 import express from "express"
 
-import protect from "../middleware/authMiddleware.js"
+
 
 import { enhanceJobDescription, enhanceProfessionalSummary, uploadResume } from "../controllers/aiController.js"
+import { protect } from "../middleware/authMiddleware.js"
 
 
 

@@ -6,6 +6,7 @@ import userRouter from "./routes/userRoute.js";
 import resumeRouter from "./routes/resumeRoute.js";
 import aiRouter from "./routes/aiRoute.js";
 import connectDB from "./config/db.js";
+import paymentRouter from "./routes/paymentRoute.js";
 
 
 dotenv.config()
@@ -22,6 +23,7 @@ app.get("/", (req, res) => res.send("Server is live"));
 app.use("/api/users", userRouter);
 app.use("/api/resumes",resumeRouter)
 app.use("/api/ai",aiRouter)
+app.use("/api/payment",paymentRouter)
 
 // connect DB, then start server
 connectDB()

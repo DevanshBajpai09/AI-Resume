@@ -8,55 +8,64 @@ import Preview from './pages/Preview'
 import Login from './pages/Login'
 import { useDispatch } from 'react-redux'
 import api from './configs/api'
-import { login, setLoading } from './app/Features/authSlice'
+import { login, logout, setLoading } from './app/Features/authSlice'
 import { useEffect } from 'react'
-import {Toaster} from "react-hot-toast"
+import { Toaster } from "react-hot-toast"
 import TryDemo from './pages/TryDemo'
 
 const App = () => {
   const dispatch = useDispatch()
 
-  const getUserData = async()=>{
+  const getUserData = async () => {
     const token = localStorage.getItem('token')
 
-    try{
-      if(token){
-        const {data} = await api.get('/api/users/data',{headers:{Authorization:`Bearer ${token}`}})
+    try {
+      if (!token) {
+        dispatch(setLoading(false));
+        return;
+      }
 
-        if(data.user){
-          dispatch(login({token, user:data.user}))
-        }
-        dispatch(setLoading(false))
-      
-    }else{
-      dispatch(setLoading(false))
-    }
+      const { data } = await api.get('/api/users/data', { headers: { Authorization: `Bearer ${token}` } })
 
-    }catch(error){
-      dispatch(setLoading(false))
+      if (!data.user?.isVerified) {
+        localStorage.removeItem("token");
+        dispatch(setLoading(false));
+        return;
+      }
+
+      dispatch(login({ token, user: data.user }));
+      dispatch(setLoading(false));
+
+
+    } catch (error) {
+      localStorage.removeItem("token");
+      dispatch(logout());
+      dispatch(setLoading(false));
       console.log(error.message)
 
     }
   }
 
 
-  useEffect(()=>{
+  useEffect(() => {
     getUserData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   return (
     <>
-    <Toaster/>
+      <Toaster />
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path="/try_demo" element={<TryDemo/>}/>
+        <Route path="/try_demo" element={<TryDemo />} />
+        <Route path="/login" element={<Login />} />
+
 
         <Route path='app' element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path='builder/:resumeId' element={<ResumeBuilder />} />
         </Route>
         <Route path='view/:resumeId' element={<Preview />} />
-        
+
 
 
       </Routes>
