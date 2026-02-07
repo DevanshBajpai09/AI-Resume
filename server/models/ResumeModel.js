@@ -48,7 +48,21 @@ const resumeSchema = new mongoose.Schema({
             gpa:{type:String}
             
         }
-    ]
+    ],
+    views: { type: Number, default: 0 },
+
+analytics: {
+  type: [
+    {
+      country: String,
+      region: String,
+      ip: String,
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
+  default: []
+},
+
 },{timestamps:true,minimize:false})
 
 const Resume = mongoose.model('Resume',resumeSchema)

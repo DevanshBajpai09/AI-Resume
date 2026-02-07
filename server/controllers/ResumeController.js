@@ -1,6 +1,7 @@
 import imagekit from "../config/imagekit.js"
 import Resume from "../models/ResumeModel.js"
 import fs from "fs"
+import axios from "axios"
 // controller for creating new resume
 // post: /api/resumes/create
 export const createResume = async (req, res) => {
@@ -113,11 +114,11 @@ export const updateResume = async (req, res) => {
         const { resumeId, resumeData, removeBackground } = req.body
         const image = req.file
 
-        let resumeDataCopy 
+        let resumeDataCopy
 
-        if(typeof resumeData === 'string'){
+        if (typeof resumeData === 'string') {
             resumeDataCopy = await JSON.parse(resumeData)
-        }else{
+        } else {
             resumeDataCopy = structuredClone(resumeData)
         }
 
@@ -126,9 +127,9 @@ export const updateResume = async (req, res) => {
             const response = await imagekit.files.upload({
                 file: imageBufferData,
                 fileName: 'resume.jpg',
-                folder:"user-resumes",
-                transformation:{
-                    pre:"w-300,h-300, fo-face, z-0.75" + (removeBackground ? ",e-bgremove" : "")
+                folder: "user-resumes",
+                transformation: {
+                    pre: "w-300,h-300, fo-face, z-0.75" + (removeBackground ? ",e-bgremove" : "")
                 }
             });
 
@@ -143,3 +144,45 @@ export const updateResume = async (req, res) => {
 
     }
 }
+
+
+export const trackPublicResume = async (req, res, next) => {
+    try {
+        const { resumeId } = req.params
+        const resume = await Resume.findOne({ _id: resumeId, public: true })
+
+        if (!resume) {
+            res.status(404).json({ message: "Resume not found" })
+        }
+
+        const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
+        let country = "Unknown"
+        let region = "Unknown"
+
+        try {
+            const { data } = await axios.get(`http://ip-api.com/json/${ip}`)
+            country = data.country || "Unknown"
+            region = data.regionName || "Unknown"
+        } catch (err) {
+            console.error("IP Geolocation error:", err.message)
+        }
+
+        resume.views = (resume.views || 0) + 1
+
+        // ensure analytics array exists
+        if (!resume.analytics) {
+            resume.analytics = []
+        }
+
+        resume.analytics.push({ country, ip, region })
+
+        await resume.save()
+
+        return res.status(200).json({ resume })
+
+    } catch (error) {
+        return res.status(400).json({ message: error.message })
+    }
+}
+

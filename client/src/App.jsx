@@ -12,6 +12,9 @@ import { login, logout, setLoading } from './app/Features/authSlice'
 import { useEffect } from 'react'
 import { Toaster } from "react-hot-toast"
 import TryDemo from './pages/TryDemo'
+import Transactions from './pages/Transactions'
+import Profile from './pages/Profile'
+import Analytics from './pages/Analytics'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -63,6 +66,10 @@ const App = () => {
         <Route path='app' element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path='builder/:resumeId' element={<ResumeBuilder />} />
+          
+          <Route path='transactions' element={<Transactions />} />
+          <Route path='profile' element={<Profile />} />
+          <Route path='analytics' element={<Analytics />} />
         </Route>
         <Route path='view/:resumeId' element={<Preview />} />
 
