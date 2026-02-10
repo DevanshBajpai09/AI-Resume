@@ -94,7 +94,7 @@ const ProjectForm = ({data, onChange}) => {
             value={project.description || ""}
             onChange={(e) => updateProject(index, "description", e.target.value)}
             placeholder="Describe your project"
-            className="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg resize-none min-h-[120px] focus:ring focus:ring-blue-500 outline-none"
+            className="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg resize-none  focus:ring focus:ring-blue-500 outline-none"
         />
     </div>
 
