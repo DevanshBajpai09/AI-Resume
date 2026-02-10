@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 const welcomeEmailTemplate = ({ name, logoUrl }) => {
   return `
 <!DOCTYPE html>
