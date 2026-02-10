@@ -186,3 +186,27 @@ export const trackPublicResume = async (req, res, next) => {
     }
 }
 
+export const updateSectionOrder = async (req, res) => {
+    try{
+
+        const userId = req.userId
+        const { resumeId, sectionOrder } = req.body
+
+
+        if(!Array.isArray(sectionOrder)){
+            return res.status(400).json({ message: "Section order must be an array" })
+        }
+
+
+        const resume = await Resume.findOneAndUpdate({ userId, _id: resumeId }, { sectionOrder }, { new: true })
+
+        if(!resume){
+            return res.status(404).json({ message: "Resume not found" })
+        }
+
+        return res.status(200).json({ message: "Section order updated successfully", sectionOrder:resume.sectionOrder })
+
+    }catch(error){
+        return res.status(400).json({ message: error.message })
+    }
+}

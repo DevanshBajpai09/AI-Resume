@@ -1,7 +1,7 @@
 import express from "express"
 
 
-import { createResume, deleteResume, getPublicResumeById, getResumeById, trackPublicResume, updateResume } from "../controllers/ResumeController.js"
+import { createResume, deleteResume, getPublicResumeById, getResumeById, trackPublicResume, updateResume, updateSectionOrder } from "../controllers/ResumeController.js"
 import upload from "../config/multer.js"
 import { protect } from "../middleware/authMiddleware.js"
 
@@ -17,6 +17,7 @@ resumeRouter.delete('/delete/:resumeId',protect, deleteResume)
 resumeRouter.get('/get/:resumeId',protect,getResumeById)
 resumeRouter.get('/public/:resumeId',getPublicResumeById)
 resumeRouter.get("/view/:resumeId", trackPublicResume)
+resumeRouter.put("/section-order",protect, updateSectionOrder)
 
 
 

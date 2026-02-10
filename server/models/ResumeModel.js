@@ -62,6 +62,11 @@ analytics: {
   ],
   default: []
 },
+sectionOrder: {
+  type: [String],
+  default: ["summary", "experience", "projects", "education", "skills"]
+},
+
 
 },{timestamps:true,minimize:false})
 

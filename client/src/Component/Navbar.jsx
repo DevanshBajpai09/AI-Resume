@@ -91,6 +91,10 @@ ${open ? "scale-100 opacity-100" : "scale-95 opacity-0 pointer-events-none"}`}
               >
                 Analytics
               </Link>
+              <a href="https://ai-interview-area.vercel.app/" target="_blank" className="block px-4 py-2 hover:bg-gray-50 transition"
+                onClick={() => setOpen(false)}>
+              Interview
+              </a>
 
               <button
                 onClick={logoutAction}

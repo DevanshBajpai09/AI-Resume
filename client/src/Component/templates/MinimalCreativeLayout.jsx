@@ -9,27 +9,158 @@ import {
   TrendingUp
 } from "lucide-react";
 
-const CreativeTemplate = ({ data, accentColor = "#10B981" }) => {
+const CreativeTemplate = ({
+  data = {},
+  accentColor = "#10B981",
+  SortableSection
+}) => {
+  /* ---------------- HELPERS ---------------- */
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const [year, month] = dateStr.split("-");
     return new Date(year, month - 1).toLocaleDateString("en-US", {
       year: "numeric",
-      month: "short"
+      month: "short",
     });
   };
 
+  /* ---------------- SECTION ORDER ---------------- */
+  const sectionOrder =
+    data.sectionOrder || ["summary", "experience", "projects", "education", "skills"];
+
+  /* ---------------- SECTIONS ---------------- */
+  const sections = {
+    summary:
+      data.professional_summary && (
+        <SortableSection id="summary">
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Star className="w-5 h-5" style={{ color: accentColor }} />
+              <h2 className="text-xl font-bold text-gray-800">About Me</h2>
+            </div>
+            <p className="text-gray-600 text-sm leading-relaxed pl-7 whitespace-pre-wrap">
+              {data.professional_summary}
+            </p>
+          </div>
+        </SortableSection>
+      ),
+
+    experience:
+      data.experience?.length > 0 && (
+        <SortableSection id="experience">
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-6">
+              <Target className="w-5 h-5" style={{ color: accentColor }} />
+              <h2 className="text-xl font-bold text-gray-800">Career Journey</h2>
+            </div>
+
+            <div className="relative pl-7">
+              <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-emerald-300"></div>
+
+              {data.experience.map((exp, index) => (
+                <div key={index} className="mb-6 relative">
+                  <div className="absolute -left-5 top-1 w-3 h-3 rounded-full bg-emerald-500"></div>
+
+                  <div className="ml-2 p-4 rounded-xl bg-white shadow-sm">
+                    <div className="flex justify-between text-sm mb-1">
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{exp.position}</h3>
+                        <p className="text-gray-600">{exp.company}</p>
+                      </div>
+                      <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+                        {formatDate(exp.start_date)} –{" "}
+                        {exp.is_current ? "Present" : formatDate(exp.end_date)}
+                      </span>
+                    </div>
+
+                    {exp.description && (
+                      <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">
+                        {exp.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SortableSection>
+      ),
+
+    projects:
+      data.projects?.length > 0 && (
+        <SortableSection id="projects">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="w-5 h-5" style={{ color: accentColor }} />
+              <h2 className="text-xl font-bold text-gray-800">Projects</h2>
+            </div>
+
+            <div className="space-y-4">
+              {data.projects.map((proj, i) => (
+                <div key={i} className="p-4 rounded-lg bg-emerald-50">
+                  <h3 className="font-semibold text-gray-800 text-sm">{proj.name}</h3>
+                  <p className="text-sm text-gray-600">{proj.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SortableSection>
+      ),
+
+    education:
+      data.education?.length > 0 && (
+        <SortableSection id="education">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-5 h-5" style={{ color: accentColor }} />
+              <h2 className="text-xl font-bold text-gray-800">Education</h2>
+            </div>
+
+            <div className="space-y-3">
+              {data.education.map((edu, i) => (
+                <div key={i} className="p-3 bg-emerald-50 rounded-md text-sm">
+                  <p className="font-semibold">{edu.degree}</p>
+                  <p className="text-emerald-700">{edu.institution}</p>
+                  <span className="text-xs text-gray-500">
+                    {formatDate(edu.graduation_date)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SortableSection>
+      ),
+
+    skills:
+      data.skills?.length > 0 && (
+        <SortableSection id="skills">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Heart className="w-5 h-5" style={{ color: accentColor }} />
+              <h2 className="text-xl font-bold text-gray-800">Skills</h2>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {data.skills.map((skill, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1.5 rounded-full text-sm bg-emerald-100 text-emerald-800"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        </SortableSection>
+      ),
+  };
+
+  /* ---------------- JSX ---------------- */
   return (
     <div className="max-w-5xl mx-auto bg-gradient-to-b from-white to-emerald-50 rounded-3xl shadow-xl">
-
-      {/* Decorative Shapes (reduced) */}
-      
       <div className="relative z-10">
-
-        {/* Header */}
+        {/* HEADER (not draggable) */}
         <div className="grid grid-cols-1 lg:grid-cols-3">
-
-          {/* Left Panel */}
           <div
             className="lg:col-span-1 p-8 flex flex-col justify-center"
             style={{ backgroundColor: accentColor }}
@@ -65,150 +196,28 @@ const CreativeTemplate = ({ data, accentColor = "#10B981" }) => {
             </div>
           </div>
 
-          {/* Right Content */}
+          {/* RIGHT DRAGGABLE CONTENT */}
           <div className="lg:col-span-2 p-8">
-
-            {/* Summary */}
-            {data.professional_summary && (
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <Star className="w-5 h-5" style={{ color: accentColor }} />
-                  <h2 className="text-xl font-bold text-gray-800">
-                    About Me
-                  </h2>
-                </div>
-                <p className="text-gray-600 text-sm leading-relaxed pl-7 whitespace-pre-wrap">
-                  {data.professional_summary}
-                </p>
-              </div>
-            )}
-
-            {/* Experience */}
-            {data.experience?.length > 0 && (
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-6">
-                  <Target className="w-5 h-5" style={{ color: accentColor }} />
-                  <h2 className="text-xl font-bold text-gray-800">
-                    Career Journey
-                  </h2>
-                </div>
-
-                <div className="relative pl-7">
-                  <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-emerald-300"></div>
-
-                  {data.experience.map((exp, index) => (
-                    <div key={index} className="mb-6 relative">
-                      <div className="absolute -left-5 top-1 w-3 h-3 rounded-full bg-emerald-500"></div>
-
-                      <div className="ml-2 p-4 rounded-xl bg-white shadow-sm">
-                        <div className="flex justify-between text-sm mb-1">
-                          <div>
-                            <h3 className="font-semibold text-gray-800">
-                              {exp.position}
-                            </h3>
-                            <p className="text-gray-600">
-                              {exp.company}
-                            </p>
-                          </div>
-                          <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
-                            {formatDate(exp.start_date)} –{" "}
-                            {exp.is_current ? "Present" : formatDate(exp.end_date)}
-                          </span>
-                        </div>
-
-                        {exp.description && (
-                          <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {sectionOrder.map((key) =>
+              ["summary", "experience"].includes(key) ? sections[key] : null
             )}
           </div>
         </div>
 
-        {/* Bottom Section */}
+        {/* BOTTOM DRAGGABLE */}
         <div className="p-8 bg-white">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-            {/* Projects */}
-            {data.projects?.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Zap className="w-5 h-5" style={{ color: accentColor }} />
-                  <h2 className="text-xl font-bold text-gray-800">
-                    Projects
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  {data.projects.map((proj, i) => (
-                    <div key={i} className="p-4 rounded-lg bg-emerald-50">
-                      <h3 className="font-semibold text-gray-800 text-sm">
-                        {proj.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {proj.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {sectionOrder.map((key) =>
+              key === "projects" ? sections[key] : null
             )}
 
-            {/* Education & Skills */}
             <div className="space-y-6">
-              {data.education?.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp className="w-5 h-5" style={{ color: accentColor }} />
-                    <h2 className="text-xl font-bold text-gray-800">
-                      Education
-                    </h2>
-                  </div>
-
-                  <div className="space-y-3">
-                    {data.education.map((edu, i) => (
-                      <div key={i} className="p-3 bg-emerald-50 rounded-md text-sm">
-                        <p className="font-semibold">{edu.degree}</p>
-                        <p className="text-emerald-700">{edu.institution}</p>
-                        <span className="text-xs text-gray-500">
-                          {formatDate(edu.graduation_date)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {data.skills?.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Heart className="w-5 h-5" style={{ color: accentColor }} />
-                    <h2 className="text-xl font-bold text-gray-800">
-                      Skills
-                    </h2>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {data.skills.map((skill, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1.5 rounded-full text-sm bg-emerald-100 text-emerald-800"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+              {sectionOrder.map((key) =>
+                ["education", "skills"].includes(key) ? sections[key] : null
               )}
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

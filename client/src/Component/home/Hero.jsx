@@ -23,6 +23,7 @@ const Hero = () => {
                         <a href="#features" className="hover:text-green-600 transition">Features</a>
                         <a href="#testimonials" className="hover:text-green-600 transition">Testimonials</a>
                         <a href="#cta" className="hover:text-green-600 transition">Contact</a>
+                        <a href="https://ai-interview-area.vercel.app/" target="_blank"  className="hover:text-green-600 transition">Interview</a>
                     </div>
 
                     <div className="flex gap-2">

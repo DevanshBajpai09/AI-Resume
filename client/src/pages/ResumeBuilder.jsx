@@ -20,6 +20,7 @@ import { useReactToPrint } from "react-to-print"
 
 
 
+
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
   const resumeRef = useRef(null)
@@ -150,6 +151,21 @@ const ResumeBuilder = () => {
   documentTitle: "Resume",
 })
 
+const handleReorder = async (newOrder) => {
+  setresumeData((prev) => ({ ...prev, sectionOrder: newOrder }));
+
+  try {
+    await api.put(
+      "/api/resumes/section-order",
+      { resumeId, sectionOrder: newOrder },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
 
 
 
@@ -251,7 +267,7 @@ const ResumeBuilder = () => {
 
             <div ref={resumeRef}>
 
-              <ResumePreview data={resumedata} accentColor={resumedata.accent_color} template={resumedata.template} />
+              <ResumePreview data={resumedata} accentColor={resumedata.accent_color} template={resumedata.template} onReorder={handleReorder} />
             </div>
 
             </div>
