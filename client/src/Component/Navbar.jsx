@@ -3,9 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../app/Features/authSlice";
 import { Sparkles, ChevronDown } from "lucide-react";
+import NavbarSkeleton from "./skeleton/NavbarSkeleton";
 
 const Navbar = () => {
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
+ 
+const isOnline = useSelector((state) => state.network.isOnline);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -27,6 +31,11 @@ const Navbar = () => {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  if (loading || !isOnline) {
+  return <NavbarSkeleton />;
+}
+
 
   return (
     <div className="shadow bg-white">

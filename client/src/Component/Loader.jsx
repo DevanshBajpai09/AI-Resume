@@ -1,11 +1,33 @@
-import React from 'react'
+import React from "react";
 
-const Loader = () => {
+const Loader = ({ text = "Loading your resume..." }) => {
   return (
-    <div className='flex items-center justify-center'>
-        <div className='size-12 border-3 border-gray-400 border-t-transparent rounded-full animate-spin'></div>
-    </div>
-  )
-}
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
 
-export default Loader
+      {/* Glow background */}
+      <div className="absolute w-72 h-72 bg-green-200/40 rounded-full blur-3xl animate-pulse" />
+
+      {/* Spinner */}
+      <div className="relative">
+        <div className="w-16 h-16 rounded-full border-4 border-green-200 border-t-green-600 animate-spin" />
+
+        {/* Inner circle */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-6 h-6 bg-green-500 rounded-full animate-pulse" />
+        </div>
+      </div>
+
+      {/* Loading text */}
+      <p className="mt-6 text-green-700 font-semibold tracking-wide animate-pulse">
+        {text}
+      </p>
+
+      {/* Small subtitle */}
+      <p className="text-sm text-gray-400 mt-1">
+        Please wait a moment
+      </p>
+    </div>
+  );
+};
+
+export default Loader;

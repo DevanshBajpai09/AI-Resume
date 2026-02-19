@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import api from "../configs/api"
 import ResumePreview from "../Component/ResumePreview"
 import toast from "react-hot-toast"
+import PublicResumeSkeleton from "../Component/PublicResumeSkeleton"
 
 const PublicResume = () => {
   const { resumeId } = useParams()
@@ -19,12 +20,13 @@ const PublicResume = () => {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchResume()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (!resumeData) {
-    return <div className="text-center mt-20">Loading...</div>
-  }
+  // ✅ Skeleton instead of plain loading text
+  if (!resumeData) return <PublicResumeSkeleton />
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 flex justify-center">

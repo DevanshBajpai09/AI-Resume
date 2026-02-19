@@ -1,10 +1,11 @@
 import { Mail, User2Icon, Lock, ArrowLeftIcon } from "lucide-react"
 import React, { useEffect, useState } from "react"
 import api from "../configs/api"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { login } from "../app/Features/authSlice"
 import toast from "react-hot-toast"
 import { Link, useNavigate } from "react-router-dom"
+import AuthSkeleton from "../Component/skeleton/AuthSkeleton"
 
 const passwordChecks = {
   length: (p) => p.length >= 8,
@@ -16,6 +17,9 @@ const passwordChecks = {
 
 const Login = () => {
   const query = new URLSearchParams(window.location.search)
+  const { loading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+
   const urlState = query.get("state")?.toLowerCase()
   const navigate = useNavigate()
 
@@ -82,6 +86,11 @@ const Login = () => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  if (loading || !isOnline) {
+  return <AuthSkeleton showNameField={state === "register"} />;
+}
+
+
   // ---------------- VERIFY SCREEN ----------------
   if (state === "verify") {
     return (
@@ -117,7 +126,7 @@ const Login = () => {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <form
           onSubmit={handleSubmit}
-          className="sm:w-[350px] w-full text-center border border-gray-300/60 rounded-2xl px-8 bg-white animate-fadeIn"
+          className="sm:w-87.5 w-full text-center border border-gray-300/60 rounded-2xl px-8 bg-white animate-fadeIn"
         >
           <h1 className="text-gray-900 text-3xl mt-10 font-medium">
             {state === "login" ? "Login" : "Sign up"}

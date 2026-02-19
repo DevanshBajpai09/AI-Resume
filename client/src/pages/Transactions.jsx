@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Download, FileText, CreditCard, Calendar, CheckCircle, XCircle, Clock, Filter, Search, ExternalLink, TrendingUp, IndianRupee } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import TransactionsSkeleton from "../Component/skeleton/TransactionsSkeleton";
+import { useSelector } from "react-redux";
 
 const statusConfig = {
     paid: {
@@ -34,6 +36,9 @@ const Transactions = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("all");
     const [search, setSearch] = useState("");
+    const { loading: authLoading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+
 
     const fetchTransactions = async () => {
         try {
@@ -87,6 +92,11 @@ const Transactions = () => {
     
     const successfulTransactions = transactions.filter(t => t.status === 'paid').length;
     const pendingTransactions = transactions.filter(t => t.status === 'created').length;
+
+    if (authLoading || !isOnline || loading) {
+  return <TransactionsSkeleton />;
+}
+
 
     return (
         <>

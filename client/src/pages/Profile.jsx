@@ -13,9 +13,12 @@ import {
 } from "lucide-react";
 import { logout } from "../app/Features/authSlice";
 import { Link, useNavigate } from "react-router-dom";
+import ProfileSkeleton from "../Component/skeleton/ProfileSkeleton";
 
 const Profile = () => {
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
+  const isOnline = useSelector((state) => state.network.isOnline);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -24,7 +27,12 @@ const Profile = () => {
     navigate("/");
   };
 
-  if (!user) return null;
+ if (loading || !isOnline) {
+  return <ProfileSkeleton />;
+}
+
+if (!user) return null;
+
 
   // ✅ clean member duration calculation
   const days = Math.floor(

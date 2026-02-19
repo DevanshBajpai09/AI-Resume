@@ -16,6 +16,7 @@ import api from '../configs/api';
 import toast from 'react-hot-toast';
 import { useRef } from 'react';
 import { useReactToPrint } from "react-to-print"
+import ResumeBuilderSkeleton from '../Component/skeleton/ResumeBuilderSkeleton';
 
 
 
@@ -25,6 +26,10 @@ const ResumeBuilder = () => {
   const { resumeId } = useParams();
   const resumeRef = useRef(null)
   const { token } = useSelector(state => state.auth)
+  const { loading: authLoading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+const [pageLoading, setPageLoading] = useState(true);
+
   const [resumedata, setresumeData] = useState({
     _id: '',
     title: '',
@@ -62,6 +67,8 @@ const ResumeBuilder = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message)
 
+    } finally {
+      setPageLoading(false);
     }
 
 
@@ -164,6 +171,11 @@ const handleReorder = async (newOrder) => {
     console.error(err);
   }
 };
+
+if (authLoading || !isOnline || pageLoading) {
+  return <ResumeBuilderSkeleton />;
+}
+
 
 
 

@@ -1,25 +1,37 @@
 import { Zap } from 'lucide-react';
 import React, { useState } from 'react'
 import Title from './Title';
+import { useSelector } from 'react-redux';
+import FeatureSkeleton from '../skeleton/FeatureSkeleton';
 
 const Feature = () => {
     const [isHover, setIsHover] = useState(null);
+    const { loading } = useSelector((state) => state.auth);
+    const isOnline = useSelector((state) => state.network.isOnline);
+
+    if (loading || !isOnline) {
+        return <FeatureSkeleton />;
+    }
+
+
+
+
     return (
         <>
             <div id='features' className='flex flex-col items-center my-8 scroll-mt-12'>
                 <div className="flex items-center gap-2 text-sm text-green-800 bg-green-400/10 border border-green-200 rounded-full px-6 py-1.5">
-                    <Zap width={14}/>
+                    <Zap width={14} />
                     <span>Simple Process</span>
                 </div>
-                <Title title="Build your resume" description="Our streamlined process heps you create a professional resume in minutes with intelligence AI-powered tools and features."/>
+                <Title title="Build your resume" description="Our streamlined process heps you create a professional resume in minutes with intelligence AI-powered tools and features." />
                 <div class="flex flex-col md:flex-row items-center justify-center xl:mt-10">
                     <img
-    class="max-w-2xl w-full
+                        class="max-w-2xl w-full
            transition-all duration-500 ease-out
            hover:-translate-y-2 hover:scale-[1.02]"
-    src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png"
-    alt=""
-  />
+                        src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png"
+                        alt=""
+                    />
                     <div class="space-y-6 px-4 md:px-0" >
                         <div onMouseEnter={() => setIsHover(0)}
                             onMouseLeave={() => setIsHover(null)} class={`flex items-center justify-center transition-colors ${isHover == 0 ? "border-violet-300 ring-offset-2 ring-1 ring-violet-300  bg-violet-100" : ""} rounded-xl py-4 pr-4 gap-6 max-w-md`}>

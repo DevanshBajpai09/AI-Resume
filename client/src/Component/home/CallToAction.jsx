@@ -1,7 +1,17 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import CallToActionSkeleton from '../skeleton/CallToActionSkeleton';
+import { useSelector } from 'react-redux';
 
 const CallToAction = () => {
+    const { loading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+
+
+if (loading || !isOnline) {
+  return <CallToActionSkeleton />;
+}
+
   return (
     <div id='cta' >
         <div className='border-y border-dashed border-slate-200 mt-28 w-full max-w-5xl mx-auto px-10 sm:px-16'>

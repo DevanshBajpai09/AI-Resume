@@ -2,8 +2,16 @@ import React from 'react'
 import Title from './Title'
 import { BookUser } from 'lucide-react'
 import TestimonialHover from './TestimonialHover'
+import { useSelector } from 'react-redux'
+import TestimonialSkeleton from '../skeleton/TestimonialSkeleton'
 
 const Testimonial = () => {
+    const { loading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+if (loading || !isOnline) {
+  return <TestimonialSkeleton />;
+}
+
     return (
         <div id='testimonials' className='flex flex-col items-center my-8 scroll-mt-12'>
             <div className="flex items-center gap-2 text-sm text-green-800 bg-green-400/10 border border-green-200 rounded-full px-6 py-1.5">

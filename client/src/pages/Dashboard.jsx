@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import api from '../configs/api';
 import toast from 'react-hot-toast';
 import pdfToText from "react-pdftotext"
+import DashboardSkeleton from '../Component/skeleton/DashboardSkeleton';
 
 const Dashboard = () => {
   const color = ["#9333ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
@@ -20,6 +21,9 @@ const Dashboard = () => {
   const [deleteResumeId, setDeleteResumeId] = useState(null);
 
   const { token } = useSelector(state => state.auth)
+  const { loading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+
 
 
   const navigate = useNavigate()
@@ -129,6 +133,10 @@ const Dashboard = () => {
     loadallResumes()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  if (loading || !isOnline) {
+  return <DashboardSkeleton />;
+}
+
   return (
     <div>
       <div className='max-w-7xl mx-auto px-4 py-8'>
@@ -156,7 +164,7 @@ const Dashboard = () => {
                 <p className='text-sm group-hover:scale-105 transition-all px-2 text-center' style={{ color: baseColor }}>{resume.title}</p>
                 <p className='absolute bottom-1 text-[11px] text-slate-400 group-hover:text-slate-500 transition-all duration-300 px-2 text-center' style={{ color: baseColor + '90' }}>Update On {new Date(resume.updatedAt).toLocaleDateString()}</p>
                 <div onClick={e => e.stopPropagation()} className='absolute top-1 right-1 group-hover:flex items-center hidden'>
-                  <TrashIcon className='size-7 p-1.5  rounded text-slate-700 transition-colors hover:text-red-800 text-red-500' 
+                  <TrashIcon className='size-7 p-1.5  rounded text-slate-700 transition-colors hover:text-red-800' 
                     onClick={() => {
                       setDeleteResumeId(resume._id);
                       setShowDeleteModal(true);

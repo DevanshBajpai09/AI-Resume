@@ -20,6 +20,7 @@ import MinimalImageTemplate from "../Component/templates/MinimalImageTemplate";
 import FuturisticTemplate from "../Component/templates/FuturisticLayout";
 import CreativeTemplate from "../Component/templates/MinimalCreativeLayout";
 import ElegantTemplate from "../Component/templates/ElegantProfessionalLayout";
+import ResumePreviewSkeleton from "./skeleton/ResumePreviewSkeleton";
 
 
 /* ---------- Sortable Wrapper ---------- */
@@ -86,6 +87,10 @@ const ResumePreview = ({ data, template, accentColor, classes = "", onReorder })
         return <ClassicTemplate {...props} />;
     }
   };
+
+  if (!data || !data.sectionOrder) {
+  return <ResumePreviewSkeleton />;
+}
 
   return (
     <div className="w-full bg-gray-100">

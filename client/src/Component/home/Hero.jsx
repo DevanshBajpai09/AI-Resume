@@ -1,13 +1,23 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import HeroSkeleton from '../skeleton/HeroSkeleton';
 
 const Hero = () => {
 
-    const { user } = useSelector(state => state.auth)
+  
     const [menuOpen, setMenuOpen] = React.useState(false);
+    const { user, loading } = useSelector(state => state.auth)
+    const isOnline = useSelector((state) => state.network.isOnline)
 
-   
+
+
+    if (loading || !isOnline) {
+        return <HeroSkeleton />;
+    }
+
+
+
 
     return (
         <>
@@ -23,7 +33,7 @@ const Hero = () => {
                         <a href="#features" className="hover:text-green-600 transition">Features</a>
                         <a href="#testimonials" className="hover:text-green-600 transition">Testimonials</a>
                         <a href="#cta" className="hover:text-green-600 transition">Contact</a>
-                        <a href="https://ai-interview-area.vercel.app/" target="_blank"  className="hover:text-green-600 transition">Interview</a>
+                        <a href="https://ai-interview-area.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-green-600 transition">Interview</a>
                     </div>
 
                     <div className="flex gap-2">
@@ -44,7 +54,7 @@ const Hero = () => {
                 </nav>
 
                 {/* Mobile Menu */}
-                <div className={`fixed inset-0 z-[100] bg-black/40 text-black backdrop-blur flex flex-col items-center justify-center text-lg gap-8 md:hidden transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`} >
+                <div className={`fixed inset-0 z-100 bg-black/40 text-black backdrop-blur flex flex-col items-center justify-center text-lg gap-8 md:hidden transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`} >
                     <a href="/" className="text-white">Home</a>
                     <a href="/features" className="text-white">Features</a>
                     <a href="/testimonials" className="text-white">Testimonials</a>
@@ -61,11 +71,11 @@ const Hero = () => {
                     {/* Avatars + Stars */}
                     <div className="flex items-center mt-24">
                         <div className="flex -space-x-3 pr-3">
-                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200" alt="user3" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[1]" />
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200" alt="user3" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-1" />
                             <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200" alt="user1" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-2" />
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200" alt="user2" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[3]" />
-                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200" alt="user3" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[4]" />
-                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="user5" className="size-8 rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[5]" />
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200" alt="user2" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-3" />
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200" alt="user3" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-4" />
+                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="user5" className="size-8 rounded-full border-2 border-white hover:-translate-y-0.5 transition z-5" />
                         </div>
 
                         <div>
@@ -81,7 +91,7 @@ const Hero = () => {
                     </div>
 
                     {/* Headline + CTA */}
-                    <h1 className="text-5xl md:text-6xl font-semibold max-w-5xl text-center mt-4 md:leading-[70px]">
+                    <h1 className="text-5xl md:text-6xl font-semibold max-w-5xl text-center mt-4 md:leading-17.5">
                         Land your dream job with <span className=" bg-linear-to-r from-green-700 to-green-600 bg-clip-text text-transparent text-nowrap">AI-powered </span> Resume.
                     </h1>
 
@@ -102,8 +112,8 @@ const Hero = () => {
                     <div class="relative flex justify-center mt-16 group">
 
                         <div
-                            class="absolute inset-0 max-w-6xl mx-auto rounded-[22px]
-           bg-gradient-to-r from-emerald-400 via-green-500 to-lime-400
+                            className="absolute inset-0 max-w-6xl mx-auto rounded-[22px]
+           bg-linear-to-r from-emerald-400 via-green-500 to-lime-400
            blur-2xl opacity-20
            transition-all duration-700 ease-out
            group-hover:blur-3xl group-hover:opacity-40">

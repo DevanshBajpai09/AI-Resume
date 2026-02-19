@@ -1,26 +1,43 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import Home from './pages/Home'
-import Layout from './pages/Layout'
-import Dashboard from './pages/Dashboard'
-import ResumeBuilder from './pages/ResumeBuilder'
-import Preview from './pages/Preview'
-import Login from './pages/Login'
-import { useDispatch } from 'react-redux'
-import api from './configs/api'
-import { login, logout, setLoading } from './app/Features/authSlice'
-import { useEffect } from 'react'
-import { Toaster } from "react-hot-toast"
-import TryDemo from './pages/TryDemo'
-import Transactions from './pages/Transactions'
-import Profile from './pages/Profile'
-import Analytics from './pages/Analytics'
+import React, { useEffect, lazy, Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Toaster } from "react-hot-toast";
+
+import api from "./configs/api";
+import { login, logout, setLoading } from "./app/Features/authSlice";
+import { setOffline, setOnline } from "./app/Features/networkSlice";
+
+import InternetStatusPopup from "./Component/InternetStatusPopup";
+import PageLoader from "./Component/skeleton/PageLoader";
+
+
+/* ---------------- LAZY ROUTES ---------------- */
+
+const Home = lazy(() => import("./pages/Home"));
+const TryDemo = lazy(() => import("./pages/TryDemo"));
+const Login = lazy(() => import("./pages/Login"));
+
+const Layout = lazy(() => import("./pages/Layout"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ResumeBuilder = lazy(() => import("./pages/ResumeBuilder"));
+const Transactions = lazy(() => import("./pages/Transactions"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+
+const Preview = lazy(() => import("./pages/Preview"));
+
+/* ---------------- APP COMPONENT ---------------- */
 
 const App = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+
+  const isOnline = useSelector((state) => state.network.isOnline);
+  const loading = useSelector((state) => state.auth.loading);
+
+  /* ---------- Restore Logged-in User ---------- */
 
   const getUserData = async () => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem("token");
 
     try {
       if (!token) {
@@ -28,7 +45,9 @@ const App = () => {
         return;
       }
 
-      const { data } = await api.get('/api/users/data', { headers: { Authorization: `Bearer ${token}` } })
+      const { data } = await api.get("/api/users/data", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!data.user?.isVerified) {
         localStorage.removeItem("token");
@@ -38,46 +57,66 @@ const App = () => {
 
       dispatch(login({ token, user: data.user }));
       dispatch(setLoading(false));
-
-
     } catch (error) {
       localStorage.removeItem("token");
       dispatch(logout());
       dispatch(setLoading(false));
-      console.log(error.message)
-
+      console.log(error.message);
     }
-  }
-
+  };
 
   useEffect(() => {
-    getUserData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    getUserData();
+    // eslint-disable-next-line
+  }, []);
+
+  /* ---------- Online / Offline Detection ---------- */
+
+  useEffect(() => {
+    const goOnline = () => dispatch(setOnline());
+    const goOffline = () => dispatch(setOffline());
+
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, [dispatch]);
+
+  /* ---------------- RENDER ---------------- */
+
   return (
     <>
       <Toaster />
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path="/try_demo" element={<TryDemo />} />
-        <Route path="/login" element={<Login />} />
 
+      {/* Show popup only after auth loading complete */}
+      {!loading && <InternetStatusPopup isOnline={isOnline} />}
 
-        <Route path='app' element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path='builder/:resumeId' element={<ResumeBuilder />} />
-          
-          <Route path='transactions' element={<Transactions />} />
-          <Route path='profile' element={<Profile />} />
-          <Route path='analytics' element={<Analytics />} />
-        </Route>
-        <Route path='view/:resumeId' element={<Preview />} />
+      {/* -------- ROUTE LEVEL LOADING -------- */}
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/try_demo" element={<TryDemo />} />
+          <Route path="/login" element={<Login />} />
 
+          {/* Protected Layout */}
+          <Route path="app" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="builder/:resumeId" element={<ResumeBuilder />} />
+            <Route path="transactions" element={<Transactions />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="analytics" element={<Analytics />} />
+          </Route>
 
-
-      </Routes>
+          {/* Public Resume Preview */}
+          <Route path="view/:resumeId" element={<Preview />} />
+        </Routes>
+      </Suspense>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

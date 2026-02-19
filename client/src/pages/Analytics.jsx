@@ -17,6 +17,7 @@ import {
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { Eye, Globe, TrendingUp, Clock, Activity, Target, Users, MapPin, Calendar } from "lucide-react";
+import AnalyticsSkeleton from "../Component/skeleton/AnalyticsSkeleton";
 
 const COLORS = [
   "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0",
@@ -30,11 +31,11 @@ const StatCard = ({ icon: Icon, label, value, trend, index }) => (
     transition={{ delay: index * 0.1 }}
     className="group relative bg-white rounded-2xl p-6 shadow-lg border border-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
   >
-    <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-br from-green-100/50 to-emerald-100/30 rounded-full blur-xl group-hover:scale-110 transition-transform" />
+    <div className="absolute -top-2 -right-2 w-16 h-16 bg-linear-to-br from-green-100/50 to-emerald-100/30 rounded-full blur-xl group-hover:scale-110 transition-transform" />
     
     <div className="relative z-10 flex items-start justify-between">
       <div className="flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-green-100 to-emerald-50 group-hover:from-green-200 group-hover:to-emerald-100 transition-all">
+        <div className="p-3 rounded-xl bg-linear-to-br from-green-100 to-emerald-50 group-hover:from-green-200 group-hover:to-emerald-100 transition-all">
           <Icon className="w-6 h-6 text-green-700" />
         </div>
         <div>
@@ -67,6 +68,9 @@ const Analytics = () => {
   const [data, setData] = useState(null);
   const { token } = useSelector((state) => state.auth);
   const [timeRange, setTimeRange] = useState("7d");
+  const { loading: authLoading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+
 
   const fetchAnalytics = async () => {
     try {
@@ -83,6 +87,7 @@ const Analytics = () => {
 
   useEffect(() => {
     if (token) fetchAnalytics();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   // Calculate derived metrics from real data
@@ -108,9 +113,14 @@ const Analytics = () => {
 
   const derived = getDerivedMetrics();
 
+  if (authLoading || !isOnline || loading) {
+  return <AnalyticsSkeleton />;
+}
+
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50/40 via-white to-emerald-50/30">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-green-50/40 via-white to-emerald-50/30">
         <div className="text-center">
           <div className="relative">
             <div className="w-20 h-20 border-4 border-green-200 rounded-full animate-spin"></div>
@@ -127,7 +137,7 @@ const Analytics = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50/40 to-white">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-green-50/40 to-white">
         <div className="text-center p-8 bg-white rounded-2xl shadow-lg border border-red-100 max-w-md">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Activity className="w-8 h-8 text-red-600" />
@@ -162,10 +172,10 @@ const Analytics = () => {
         >
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-green-600 to-emerald-500 shadow-lg">
+              <div className="p-2 rounded-xl bg-linear-to-br from-green-600 to-emerald-500 shadow-lg">
                 <Activity className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-900 to-emerald-800 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-green-900 to-emerald-800 bg-clip-text text-transparent">
                 Resume Analytics
               </h1>
             </div>
@@ -211,7 +221,7 @@ const Analytics = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6"
+            className="bg-linear-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6"
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -251,7 +261,7 @@ const Analytics = () => {
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50">
+                <div className="p-2 rounded-lg bg-linear-to-br from-green-100 to-emerald-50">
                   <TrendingUp className="w-5 h-5 text-green-700" />
                 </div>
                 <div>
@@ -262,7 +272,7 @@ const Analytics = () => {
             </div>
 
             {data.viewsTimeline?.length ? (
-              <div className="h-[300px]">
+              <div className="h-75">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data.viewsTimeline}>
                     <defs>
@@ -302,7 +312,7 @@ const Analytics = () => {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[300px] flex flex-col items-center justify-center">
+              <div className="h-75 flex flex-col items-center justify-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                   <TrendingUp className="w-8 h-8 text-green-400" />
                 </div>
@@ -321,7 +331,7 @@ const Analytics = () => {
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-green-100 to-emerald-50">
+                <div className="p-2 rounded-lg bg-linear-to-br from-green-100 to-emerald-50">
                   <MapPin className="w-5 h-5 text-green-700" />
                 </div>
                 <div>
@@ -335,7 +345,7 @@ const Analytics = () => {
             </div>
 
             {data.countryDistribution?.length ? (
-              <div className="h-[300px]">
+              <div className="h-75">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -372,7 +382,7 @@ const Analytics = () => {
                 
               </div>
             ) : (
-              <div className="h-[300px] flex flex-col items-center justify-center">
+              <div className="h-75 flex flex-col items-center justify-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                   <Globe className="w-8 h-8 text-green-400" />
                 </div>

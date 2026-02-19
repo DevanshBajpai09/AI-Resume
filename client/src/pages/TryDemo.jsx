@@ -40,7 +40,7 @@ const TryDemo = () => {
       
       {/* Background glow */}
       <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
-        <div className="w-[700px] h-[400px] bg-gradient-to-r from-emerald-400 via-green-500 to-lime-400 blur-[120px] opacity-25" />
+        <div className="w-175 h-100 bg-linear-to-r from-emerald-400 via-green-500 to-lime-400 blur-[120px] opacity-25" />
       </div>
 
       {/* Heading */}
@@ -62,7 +62,7 @@ const TryDemo = () => {
         
         {/* Glow */}
         <div className="absolute -inset-2 rounded-2xl 
-                        bg-gradient-to-r from-emerald-400 via-green-500 to-lime-400
+                        bg-linear-to-r from-emerald-400 via-green-500 to-lime-400
                         blur-2xl opacity-20
                         transition-all duration-700
                         group-hover:opacity-40 group-hover:blur-3xl" />

@@ -1,18 +1,22 @@
 import React from 'react'
+import FooterSkeleton from '../skeleton/FooterSkeleton';
+import { useSelector } from 'react-redux';
 
 const Footer = () => {
+    const { loading } = useSelector((state) => state.auth);
+const isOnline = useSelector((state) => state.network.isOnline);
+
+if (loading || !isOnline) {
+  return <FooterSkeleton />;
+}
+
+
   return (
     <>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
             
-                * {
-                    font-family: 'Poppins', sans-serif;
-                }
-            `}</style>
             
             <footer className="flex flex-wrap justify-center lg:justify-between overflow-hidden gap-10 md:gap-20 py-16 px-6 md:px-16 lg:px-24 xl:px-32 mt-40 text-[13px] text-gray-500 bg-linear-to-r from-white via-green-200/60 to-white">
-                <div className="flex flex-wrap items-start gap-10 md:gap-[60px] xl:gap-[140px]">
+                <div className="flex flex-wrap items-start gap-10 md:gap-15 xl:gap-35">
                     <a href="#">
                         <img src="/logo.svg" alt="logo" />
                     </a>
