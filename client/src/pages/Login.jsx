@@ -18,13 +18,14 @@ const passwordChecks = {
 const Login = () => {
   const query = new URLSearchParams(window.location.search)
   const { loading } = useSelector((state) => state.auth);
-const isOnline = useSelector((state) => state.network.isOnline);
+  const isOnline = useSelector((state) => state.network.isOnline);
 
   const urlState = query.get("state")?.toLowerCase()
   const navigate = useNavigate()
 
   const [state, setState] = useState(urlState || "login")
   const [verifying, setVerifying] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const dispatch = useDispatch()
 
@@ -43,7 +44,7 @@ const isOnline = useSelector((state) => state.network.isOnline);
       setVerifying(true)
       const { data } = await api.get(`/api/users/verify-email?token=${token}`)
       toast.success("Email verified 🎉 Please login")
-      setState("login") 
+      setState("login")
       window.history.replaceState({}, "", "/login")
 
     } catch (error) {
@@ -61,9 +62,13 @@ const isOnline = useSelector((state) => state.network.isOnline);
   // ---------------- FORM SUBMIT ----------------
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (submitting) return   // 🚨 prevents multiple clicks
+
+    setSubmitting(true)
+
     try {
       const { data } = await api.post(`/api/users/${state}`, formData)
-      
+
 
       if (state === "login") {
         localStorage.setItem("token", data.token)
@@ -78,6 +83,8 @@ const isOnline = useSelector((state) => state.network.isOnline);
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message)
+    } finally{
+      setSubmitting(false)
     }
   }
 
@@ -87,8 +94,8 @@ const isOnline = useSelector((state) => state.network.isOnline);
   }
 
   if (loading || !isOnline) {
-  return <AuthSkeleton showNameField={state === "register"} />;
-}
+    return <AuthSkeleton showNameField={state === "register"} />;
+  }
 
 
   // ---------------- VERIFY SCREEN ----------------
@@ -210,9 +217,10 @@ const isOnline = useSelector((state) => state.network.isOnline);
 
           <button
             type="submit"
+            disabled={submitting}
             className="mt-4 w-full h-11 rounded-full text-white bg-green-500 hover:bg-green-600 transition"
           >
-            {state === "login" ? "Login" : "Sign up"}
+            {submitting ? "Please wait" : state === "login" ? "Login" : "Sign up"}
           </button>
 
           <p

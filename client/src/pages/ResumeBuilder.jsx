@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
 
-import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react';
+import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, Copy, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, Globe, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react';
 import PersonalInfo from '../Component/PersonalInfo';
 import ResumePreview from '../Component/ResumePreview';
 import TemplateSelector from '../Component/TemplateSelector';
@@ -17,6 +17,8 @@ import toast from 'react-hot-toast';
 import { useRef } from 'react';
 import { useReactToPrint } from "react-to-print"
 import ResumeBuilderSkeleton from '../Component/skeleton/ResumeBuilderSkeleton';
+import QRCode from "react-qr-code"
+import { QrCode } from "lucide-react"
 
 
 
@@ -27,22 +29,28 @@ const ResumeBuilder = () => {
   const resumeRef = useRef(null)
   const { token } = useSelector(state => state.auth)
   const { loading: authLoading } = useSelector((state) => state.auth);
-const isOnline = useSelector((state) => state.network.isOnline);
-const [pageLoading, setPageLoading] = useState(true);
+  const isOnline = useSelector((state) => state.network.isOnline);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const shareRef = useRef(null)
+  const [showQR, setShowQR] = useState(false)
+
+
+  const portfolioUrl = window.location.origin + "/portfolio/" + resumeId
 
   const [resumedata, setresumeData] = useState({
     _id: '',
     title: '',
     personal_info: {
-    full_name: '',
-    profession: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedin: '',
-    website: '',
-    image: ''
-  },
+      full_name: '',
+      profession: '',
+      email: '',
+      phone: '',
+      location: '',
+      linkedin: '',
+      website: '',
+      image: ''
+    },
     professionalInfo: {},
     professionalSummary: '',
     experience: [],
@@ -58,7 +66,7 @@ const [pageLoading, setPageLoading] = useState(true);
   const loadExistingResume = async () => {
     try {
       const { data } = await api.get("/api/resumes/get/" + resumeId, { headers: { Authorization: `Bearer ${token}` } })
-      
+
       if (data.resume) {
         setresumeData(data.resume)
         document.title = data.resume.title
@@ -95,7 +103,16 @@ const [pageLoading, setPageLoading] = useState(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shareRef.current && !shareRef.current.contains(event.target)) {
+        setShowShareMenu(false)
+      }
+    }
 
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const changeResumeVisibility = async () => {
     try {
@@ -114,15 +131,7 @@ const [pageLoading, setPageLoading] = useState(true);
     }
   }
 
-  const handleShare = async () => {
-    const frontendUrl = window.location.href.split('/app/')[0]
-    const resumeUrl = frontendUrl + '/view/' + resumeId
-    if (navigator.share) {
-      navigator.share({ url: resumeUrl, text: "My Resume" })
-    } else {
-      alert("Share not supported in thsi browser")
-    }
-  }
+ 
 
   const saveResume = async () => {
     try {
@@ -150,27 +159,27 @@ const [pageLoading, setPageLoading] = useState(true);
 
     }
   }
- 
+
 
 
   const downloadResume = useReactToPrint({
-  contentRef: resumeRef,
-  documentTitle: "Resume",
-})
+    contentRef: resumeRef,
+    documentTitle: "Resume",
+  })
 
-const handleReorder = async (newOrder) => {
-  setresumeData((prev) => ({ ...prev, sectionOrder: newOrder }));
+  const handleReorder = async (newOrder) => {
+    setresumeData((prev) => ({ ...prev, sectionOrder: newOrder }));
 
-  try {
-    await api.put(
-      "/api/resumes/section-order",
-      { resumeId, sectionOrder: newOrder },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      await api.put(
+        "/api/resumes/section-order",
+        { resumeId, sectionOrder: newOrder },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 if (authLoading || !isOnline || pageLoading) {
   return <ResumeBuilderSkeleton />;
@@ -253,11 +262,84 @@ if (authLoading || !isOnline || pageLoading) {
               {/* button */}
               <div className='absolute bottom-3 left-0 right-0 flex items-center justify-end gap-2'>
                 {resumedata.public && (
-                  <button onClick={handleShare} className='flex items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-blue-100 to-blue-200 text-blue-600 rounded-lg ring-blue-300 hover:ring transition-colors'>
+  <div className="relative z-40" ref={shareRef}>
+    
+    <button
+      onClick={() => setShowShareMenu((prev) => !prev)}
+      className="flex items-center p-2 px-4 gap-2 text-xs 
+      bg-linear-to-br from-blue-100 to-blue-200 
+      text-blue-600 rounded-lg ring-blue-300 
+      hover:ring transition-all duration-200"
+    >
+      <Share2Icon className="size-4" />
+      Share
+    </button>
 
-                    <Share2Icon className='size-4' /> Share
+    {showShareMenu && (
+      <div
+        className="absolute right-0 mt-2 w-48 
+        bg-white border border-gray-200 
+        rounded-xl shadow-lg 
+        animate-[fadeIn_0.15s_ease-out]"
+      >
+
+        <button
+          onClick={() => {
+            const url = window.location.origin + "/view/" + resumeId
+            navigator.clipboard.writeText(url)
+            toast.success("Resume link copied")
+            setShowShareMenu(false)
+          }}
+          className="flex items-center gap-3 w-full px-4 py-3 
+          text-sm text-gray-700 
+          hover:bg-gray-100 transition-colors"
+        >
+          <FileText className="size-4 text-blue-500" />
+          Resume Link
+          <Copy className="size-3 ml-auto opacity-60" />
+        </button>
+
+        <button
+          onClick={() => {
+            const url = window.location.origin + "/portfolio/" + resumeId
+            navigator.clipboard.writeText(url)
+            toast.success("Portfolio link copied")
+            setShowShareMenu(false)
+          }}
+          className="flex items-center gap-3 w-full px-4 py-3 
+          text-sm text-gray-700 
+          hover:bg-gray-100 transition-colors"
+        >
+          <Globe className="size-4 text-green-500" />
+          Portfolio Link
+          <Copy className="size-3 ml-auto opacity-60" />
+        </button>
+
+      </div>
+    )}
+  </div>
+)}
+{resumedata.public && (
+  <button
+    onClick={() => setShowQR(true)}
+    className="flex items-center p-2 px-4 gap-2 text-xs 
+    bg-linear-to-br from-indigo-100 to-indigo-200 
+    text-indigo-600 rounded-lg ring-indigo-300 hover:ring transition-colors"
+  >
+    <QrCode className="size-4" />
+    QR Code
+  </button>
+)}
+                {resumedata.public && (
+                  <button
+                    onClick={() => window.open(`/portfolio/${resumeId}`, "_blank")}
+                    className="flex items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-gray-300 to-gray-400 text-gray-800 rounded-lg ring-gray-500 hover:ring transition-colors"
+                  >
+                    <Globe className="size-4" />
+                    Generate Portfolio
                   </button>
                 )}
+
 
                 <button onClick={changeResumeVisibility} className='flex items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-purple-100 to-purple-200 text-purple-600 rounded-lg ring-purple-300 hover:ring transition-colors'>
                   {resumedata.public ? <EyeIcon className='size-4' /> : <EyeOffIcon className='size-4' />}
@@ -277,10 +359,10 @@ if (authLoading || !isOnline || pageLoading) {
 
 
 
-            <div ref={resumeRef}>
+              <div ref={resumeRef}>
 
-              <ResumePreview data={resumedata} accentColor={resumedata.accent_color} template={resumedata.template} onReorder={handleReorder} />
-            </div>
+                <ResumePreview data={resumedata} accentColor={resumedata.accent_color} template={resumedata.template} onReorder={handleReorder} />
+              </div>
 
             </div>
 
@@ -289,8 +371,62 @@ if (authLoading || !isOnline || pageLoading) {
         </div>
 
       </div>
+      {showQR && (
+  <div
+    className="fixed inset-0 flex items-center justify-center 
+    bg-black/40 backdrop-blur-sm 
+    z-50 animate-[modalFade_0.2s_ease-out]"
+  >
+
+    <div
+      className="relative bg-white rounded-2xl 
+      p-7 shadow-2xl text-center w-80 
+      animate-[modalScale_0.25s_ease-out]"
+    >
+
+      {/* Close button */}
+      <button
+        onClick={() => setShowQR(false)}
+        className="absolute top-3 right-3 p-1 rounded-full 
+        text-gray-400 hover:text-gray-700 
+        hover:bg-gray-100 transition cursor-pointer"
+      >
+        ✕
+      </button>
+
+      {/* Title */}
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        Scan Portfolio QR
+      </h2>
+
+      {/* QR container */}
+      <div className="flex justify-center p-4 
+        bg-gray-50 rounded-xl shadow-inner">
+
+        <QRCode
+          value={portfolioUrl}
+          size={180}
+        />
+
+      </div>
+
+      {/* Info text */}
+      <p className="text-xs text-gray-500 mt-4">
+        Scan this QR code to open your portfolio on your phone
+      </p>
+
+      {/* Portfolio link preview */}
+      <p className="text-xs text-gray-400 mt-2 truncate">
+        {portfolioUrl}
+      </p>
 
     </div>
+
+  </div>
+)}
+
+    </div>
+    
   )
 }
 

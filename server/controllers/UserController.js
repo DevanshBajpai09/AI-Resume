@@ -13,6 +13,8 @@ import welcomeEmailTemplate from "../emails/welcomeEmailTemplate.js"
 
 dotenv.config()
 
+const loginAttempts = new Map();
+
 
 // to generate token
 
@@ -151,7 +153,17 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" })
         }
 
-        // check if user already exist
+
+
+        const now = Date.now();
+        const attempts = loginAttempts.get(email)
+
+        if (attempts && attempts.blockUntil && attempts.blockUntil > now) {
+            const secondleft = Math.ceil((attempts.blockUntil - now) / 1000)
+            return res.status(429).json({ message: `Too many login attempts. Please try again after ${secondleft} seconds` })
+        }
+
+        
 
         const user = await User.findOne({ email })
 
@@ -167,12 +179,16 @@ export const loginUser = async (req, res) => {
         const isMatch = await user.comparePassword(password);
 
         if (!isMatch) {
+            registerfailedLoginAttempt(email)
             return res.status(400).json({ message: "Invalid email or password" });
         }
 
         if (!user.isVerified) {
             return res.status(403).json({ message: "Please verify your email first" })
         }
+
+
+        loginAttempts.delete(email)
 
         
 
@@ -192,6 +208,28 @@ export const loginUser = async (req, res) => {
     }
 
 }
+
+function registerfailedLoginAttempt(email){
+    const attempt = loginAttempts.get(email) || {
+        attempts: 0,
+        blockUntil: null
+    }
+
+    attempt.attempts += 1
+
+
+    if(attempt.attempts >= 5){
+        attempt.blockUntil = Date.now() + 30000 
+        attempt.attempts = 0
+    }
+
+    loginAttempts.set(email, attempt)
+}
+
+
+
+
+
 
 // POST /API/USERS/DATA
 // CONTROLLER TO USER DATA BY ID

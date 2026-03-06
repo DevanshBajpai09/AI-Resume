@@ -9,6 +9,7 @@ import { setOffline, setOnline } from "./app/Features/networkSlice";
 
 import InternetStatusPopup from "./Component/InternetStatusPopup";
 import PageLoader from "./Component/skeleton/PageLoader";
+import Portfolio from "./pages/Portfolio";
 
 
 /* ---------------- LAZY ROUTES ---------------- */
@@ -111,6 +112,7 @@ const App = () => {
             <Route path="analytics" element={<Analytics />} />
           </Route>
 
+            <Route path="portfolio/:resumeId" element={<Portfolio />} />
           {/* Public Resume Preview */}
           <Route path="view/:resumeId" element={<Preview />} />
         </Routes>
