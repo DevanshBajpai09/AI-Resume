@@ -14,15 +14,27 @@ body {
   
 }
 
-.hide-scrollbar {
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE & Edge */
+/* Hide scrollbar but allow scrolling */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;                /* Chrome, Safari */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 /* A4 page size */
+
+
+@keyframes fadeIn {
+0% {opacity:0}
+100% {opacity:1}
+}
+
+@keyframes scaleIn {
+0% {transform:scale(.95);opacity:0}
+100% {transform:scale(1);opacity:1}
+}
 
 @keyframes modalFade {
   from {

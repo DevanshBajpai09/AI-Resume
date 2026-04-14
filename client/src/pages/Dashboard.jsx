@@ -140,9 +140,7 @@ const isOnline = useSelector((state) => state.network.isOnline);
   return (
     <div>
       <div className='max-w-7xl mx-auto px-4 py-8'>
-        <p className='text-2xl font-medium mb-6 bg-linear-to-r from-slate-600 to-slate-600 bg-clip-text text-transparent sm:hidden'>
-          Welcome John Doe
-        </p>
+        
         <div className='flex gap-4'>
           <button onClick={() => setCreateResume(true)} className='w-full bg-white sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 text-slate-600 border border-dashed border-slate-300 group hover:border-green-500 hover:shadow-lg transition-all duration-300 cursor-pointer'>
             <Plus className='size-11 transition-all duration-300 p-2.5 bg-linear-to-br from-green-300 to-green-500 text-white rounded-full' />

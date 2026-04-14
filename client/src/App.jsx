@@ -10,6 +10,8 @@ import { setOffline, setOnline } from "./app/Features/networkSlice";
 import InternetStatusPopup from "./Component/InternetStatusPopup";
 import PageLoader from "./Component/skeleton/PageLoader";
 import Portfolio from "./pages/Portfolio";
+import socket from "./configs/socket";
+
 
 
 /* ---------------- LAZY ROUTES ---------------- */
@@ -27,6 +29,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 
 const Preview = lazy(() => import("./pages/Preview"));
 
+
 /* ---------------- APP COMPONENT ---------------- */
 
 const App = () => {
@@ -34,6 +37,7 @@ const App = () => {
 
   const isOnline = useSelector((state) => state.network.isOnline);
   const loading = useSelector((state) => state.auth.loading);
+  const user = useSelector((state)=> state.auth.user)
 
   /* ---------- Restore Logged-in User ---------- */
 
@@ -70,6 +74,14 @@ const App = () => {
     getUserData();
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+  if (user?._id) {
+    socket.emit("join", user._id)
+  }
+}, [user])
+
+
 
   /* ---------- Online / Offline Detection ---------- */
 

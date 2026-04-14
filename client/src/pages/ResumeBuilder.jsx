@@ -19,6 +19,7 @@ import { useReactToPrint } from "react-to-print"
 import ResumeBuilderSkeleton from '../Component/skeleton/ResumeBuilderSkeleton';
 import QRCode from "react-qr-code"
 import { QrCode } from "lucide-react"
+import ATSModal from '../Component/ATSModal';
 
 
 
@@ -34,6 +35,7 @@ const ResumeBuilder = () => {
   const [showShareMenu, setShowShareMenu] = useState(false)
   const shareRef = useRef(null)
   const [showQR, setShowQR] = useState(false)
+  const [showATS, setShowATS] = useState(false)
 
 
   const portfolioUrl = window.location.origin + "/portfolio/" + resumeId
@@ -261,12 +263,27 @@ if (authLoading || !isOnline || pageLoading) {
             <div className='relative w-full'>
               {/* button */}
               <div className='absolute bottom-3 left-0 right-0 flex items-center justify-end gap-2'>
+                <button
+onClick={()=>setShowATS(true)}
+className="flex items-center p-2 px-4 gap-2 text-xs
+bg-linear-to-br from-orange-100 to-orange-200
+text-orange-700 rounded-lg ring-orange-300 hover:ring
+transition-colors"
+>
+ATS Score: {resumedata.atsScore || 0}%
+</button>
+{showATS && (
+<ATSModal
+resume={resumedata}
+onClose={()=>setShowATS(false)}
+/>
+)}
                 {resumedata.public && (
   <div className="relative z-40" ref={shareRef}>
     
     <button
       onClick={() => setShowShareMenu((prev) => !prev)}
-      className="flex items-center p-2 px-4 gap-2 text-xs 
+      className="flex items-center p-2 px-4 gap-2 text-xs cursor-pointer
       bg-linear-to-br from-blue-100 to-blue-200 
       text-blue-600 rounded-lg ring-blue-300 
       hover:ring transition-all duration-200"
@@ -290,7 +307,7 @@ if (authLoading || !isOnline || pageLoading) {
             toast.success("Resume link copied")
             setShowShareMenu(false)
           }}
-          className="flex items-center gap-3 w-full px-4 py-3 
+          className="flex items-center gap-3 w-full px-4 py-3 cursor-pointer
           text-sm text-gray-700 
           hover:bg-gray-100 transition-colors"
         >
@@ -306,7 +323,7 @@ if (authLoading || !isOnline || pageLoading) {
             toast.success("Portfolio link copied")
             setShowShareMenu(false)
           }}
-          className="flex items-center gap-3 w-full px-4 py-3 
+          className="flex items-center gap-3 w-full px-4 py-3 cursor-pointer
           text-sm text-gray-700 
           hover:bg-gray-100 transition-colors"
         >
@@ -322,7 +339,7 @@ if (authLoading || !isOnline || pageLoading) {
 {resumedata.public && (
   <button
     onClick={() => setShowQR(true)}
-    className="flex items-center p-2 px-4 gap-2 text-xs 
+    className="flex items-center p-2 px-4 gap-2 text-xs cursor-pointer
     bg-linear-to-br from-indigo-100 to-indigo-200 
     text-indigo-600 rounded-lg ring-indigo-300 hover:ring transition-colors"
   >
@@ -333,15 +350,15 @@ if (authLoading || !isOnline || pageLoading) {
                 {resumedata.public && (
                   <button
                     onClick={() => window.open(`/portfolio/${resumeId}`, "_blank")}
-                    className="flex items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-gray-300 to-gray-400 text-gray-800 rounded-lg ring-gray-500 hover:ring transition-colors"
+                    className="flex items-center cursor-pointer p-2 px-4 gap-2 text-xs bg-linear-to-br from-gray-300 to-gray-400 text-gray-800 rounded-lg ring-gray-500 hover:ring transition-colors"
                   >
                     <Globe className="size-4" />
-                    Generate Portfolio
+                    Portfolio
                   </button>
                 )}
 
 
-                <button onClick={changeResumeVisibility} className='flex items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-purple-100 to-purple-200 text-purple-600 rounded-lg ring-purple-300 hover:ring transition-colors'>
+                <button onClick={changeResumeVisibility} className='flex cursor-pointer items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-purple-100 to-purple-200 text-purple-600 rounded-lg ring-purple-300 hover:ring transition-colors'>
                   {resumedata.public ? <EyeIcon className='size-4' /> : <EyeOffIcon className='size-4' />}
                   {resumedata.public ? "public" : "private"}
                 </button>

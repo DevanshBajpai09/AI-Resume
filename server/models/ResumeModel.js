@@ -62,6 +62,32 @@ analytics: {
   ],
   default: []
 },
+
+atsScore: {
+  type: Number,
+  default: 0
+},
+
+atsFeedback: {
+  type: [String],
+  default: []
+},
+missingKeywords: {
+  type: [String],
+  default: []
+},
+atsStrengths: {
+  type: [String],
+  default: []
+},
+
+atsSectionScores: {
+  skills: Number,
+  experience: Number,
+  projects: Number,
+  education: Number,
+  summary: Number
+},
 sectionOrder: {
   type: [String],
   default: ["summary", "experience", "projects", "education", "skills"]

@@ -2,6 +2,8 @@ import imagekit from "../config/imagekit.js"
 import Resume from "../models/ResumeModel.js"
 import fs from "fs"
 import axios from "axios"
+import Notification from "../models/NotificationModel.js"
+import analyzeResumeATS from '../utils/analyzeResumeATS.js'
 // controller for creating new resume
 // post: /api/resumes/create
 export const createResume = async (req, res) => {
@@ -137,7 +139,17 @@ export const updateResume = async (req, res) => {
         }
         const resume = await Resume.findOneAndUpdate({ userId, _id: resumeId }, resumeDataCopy, { new: true })
 
-        return res.status(200).json({ message: "Saved Successsfully", resume })
+        const aiResult = await analyzeResumeATS(resume)
+
+resume.atsScore = aiResult.score
+resume.atsFeedback = aiResult.suggestions
+resume.atsStrengths = aiResult.strengths
+resume.missingKeywords = aiResult.missing_keywords
+resume.atsSectionScores = aiResult.section_scores
+
+await resume.save()
+
+        return res.status(200).json({ message: "Saved Successsfully", resume, atsScore: resume.atsScore  })
 
     } catch (error) {
         return res.status(400).json({ message: error.message })
@@ -178,6 +190,16 @@ export const trackPublicResume = async (req, res, next) => {
         resume.analytics.push({ country, ip, region })
 
         await resume.save()
+
+
+        const notification = await Notification.create({
+  userId: resume.userId,
+  message: `🌍 Someone from ${country} viewed your resume`
+})
+
+const io = req.app.get("io")
+
+io.to(`user_${resume.userId}`).emit("new_notification", notification)
 
         return res.status(200).json({ resume })
 

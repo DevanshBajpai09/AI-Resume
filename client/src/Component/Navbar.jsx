@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../app/Features/authSlice";
 import { Sparkles, ChevronDown } from "lucide-react";
 import NavbarSkeleton from "./skeleton/NavbarSkeleton";
+import NotificationBell from "./NotificationBell";
 
 const Navbar = () => {
   const { user, loading } = useSelector((state) => state.auth);
@@ -50,6 +51,13 @@ const isOnline = useSelector((state) => state.network.isOnline);
         {user && (
           <div className="flex items-center gap-4 text-sm relative" ref={dropdownRef}>
 
+
+            <div className="flex items-center gap-4 ">
+
+  <NotificationBell/>
+
+</div>
+
             {/* Premium Badge */}
             {user.isPremium && (
               <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold
@@ -58,6 +66,8 @@ const isOnline = useSelector((state) => state.network.isOnline);
                 PREMIUM
               </span>
             )}
+
+
 
             {/* Profile Button */}
             <button
@@ -107,7 +117,7 @@ ${open ? "scale-100 opacity-100" : "scale-95 opacity-0 pointer-events-none"}`}
 
               <button
                 onClick={logoutAction}
-                className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 transition"
+                className="w-full text-left px-4 py-2 hover:bg-red-50 cursor-pointer text-red-600 transition"
               >
                 Logout
               </button>
