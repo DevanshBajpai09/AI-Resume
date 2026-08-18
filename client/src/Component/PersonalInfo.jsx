@@ -1,73 +1,595 @@
-import { BriefcaseBusinessIcon, FileDiff, Globe, Linkedin, Mail, MapPin, Phone, User } from 'lucide-react'
-import React from 'react'
+import {
+  BriefcaseBusinessIcon,
+  Globe,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+  Upload,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 
+const PersonalInfo = ({
+  data,
+  onChange,
+  removeBackground,
+  setRemoveBackground,
+}) => {
+  const [imagePreview, setImagePreview] =
+    useState(null);
 
-const PersonalInfo = ({data, onChange, removeBackground,setRemoveBackground}) => {
-    const handleChange = (field, value)=>{
-        onChange({...data, [field]: value})
+  const handleChange = (field, value) => {
+    onChange({
+      ...data,
+      [field]: value,
+    });
+  };
+
+  // Create image preview safely
+  useEffect(() => {
+    if (!data?.image) {
+      setImagePreview(null);
+      return;
     }
 
-    const fields = [
-        {key:"full_name", label:"Full Name",icon:User, type:"text",required:true},
-        {key:"email", label:"Email address",icon: Mail, type:"email",required:true},
-        {key:"phone", label:"Phone Number",icon: Phone, type:"tel",required:true},
-        {key:"location", label:"Location",icon: MapPin, type:"text",required:true},
-        {key:"profession", label:"Profession",icon:BriefcaseBusinessIcon, type:"text",required:true},
-        {key:"linkedin", label:"Linkedin Profile",icon:Linkedin, type:"url",required:true},
-        {key:"website", label:"Personal Website",icon:Globe, type:"url",required:true},
-    ]
+    if (typeof data.image === "string") {
+      setImagePreview(data.image);
+      return;
+    }
+
+    const url = URL.createObjectURL(data.image);
+    setImagePreview(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [data?.image]);
+
+  const fields = [
+    {
+      key: "full_name",
+      label: "Full Name",
+      icon: User,
+      type: "text",
+      required: true,
+    },
+    {
+      key: "email",
+      label: "Email address",
+      icon: Mail,
+      type: "email",
+      required: true,
+    },
+    {
+      key: "phone",
+      label: "Phone Number",
+      icon: Phone,
+      type: "tel",
+      required: true,
+    },
+    {
+      key: "location",
+      label: "Location",
+      icon: MapPin,
+      type: "text",
+      required: true,
+    },
+    {
+      key: "profession",
+      label: "Profession",
+      icon: BriefcaseBusinessIcon,
+      type: "text",
+      required: true,
+    },
+    {
+      key: "linkedin",
+      label: "LinkedIn Profile",
+      icon: Linkedin,
+      type: "url",
+      required: false,
+    },
+    {
+      key: "website",
+      label: "Personal Website",
+      icon: Globe,
+      type: "url",
+      required: false,
+    },
+  ];
+
   return (
-    <div>
-        <h3 className='text-lg font-semibold text-gray-900'>Personal Information</h3>
-        <p className='text-sm text-gray-600'> Get started with personal information</p>
-        <div className='flex items-center gap-2'>
-            <label>
-                {data?.image ? (
-                    <img src={typeof data.image === 'string' ? data.image : URL.createObjectURL(data.image)} alt="user-image" className='w-16 h-16 rounded-full object-cover mt-5 ring ring-slate-300 hover:opacity-50' />
-                ):(
-                    <div className='inline-flex items-center gap-2 mt-5 text-slate-600 hover:text-slate-700 cursor-pointer'>
-                        <User className='size-10 p-2.5 border rounded-full'/>
-                        Upload user image
-                    </div>
+    <div
+      style={{
+        background: "#FBFAF6",
+        color: "#171B24",
+        minHeight: "100%",
+      }}
+    >
+      {/* ========================================== */}
+      {/* HEADER */}
+      {/* ========================================== */}
 
-                )}
-                <input type="file" accept='image/jpeg, image/png'  className='hidden' onChange={(e)=>handleChange("image", e.target.files[0])}/>
-            </label>
-            {typeof data?.image === 'object' && (
-                <div className='flex flex-col gap-1 pl-4 text-sm'>
-                    <p>Remove background</p>
-                    <label  className='relative inline-flex items-center cursor-pointer text-gray-600 gap-3'>
-                        <input type="checkbox"  className='sr-only peer'  onChange={()=> setRemoveBackground(prev=>!prev)} checked={removeBackground} />
-                        <div className='w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-300'>
-                        </div>
-                        <span className='dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-4'>
-                     
-                        </span>
-
-                    </label>
-                </div>
-
-            )}
+      <div
+        style={{
+          paddingBottom: "20px",
+          borderBottom: "1px solid #DFDACC",
+        }}
+      >
+        <div
+          style={{
+            fontFamily:
+              "'IBM Plex Mono', monospace",
+            fontSize: "9px",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+            color: "#C63B26",
+            marginBottom: "5px",
+          }}
+        >
+          § 01 / Identity
         </div>
 
-        {fields.map((field)=>{
-            const Icon = field.icon;
+        <h3
+          style={{
+            margin: 0,
+            fontFamily:
+              "'Newsreader', serif",
+            fontSize: "27px",
+            fontWeight: 500,
+            color: "#171B24",
+          }}
+        >
+          Personal Information
+        </h3>
+
+        <p
+          style={{
+            margin:
+              "5px 0 0",
+            fontFamily:
+              "system-ui, sans-serif",
+            fontSize: "12px",
+            color: "#5B6070",
+            lineHeight: 1.5,
+          }}
+        >
+          Add the information recruiters need
+          to identify and contact you.
+        </p>
+      </div>
+
+      {/* ========================================== */}
+      {/* PROFILE IMAGE */}
+      {/* ========================================== */}
+
+      <div
+        style={{
+          padding:
+            "20px 0",
+          borderBottom:
+            "1px solid #DFDACC",
+        }}
+      >
+        <div
+          style={{
+            fontFamily:
+              "'IBM Plex Mono', monospace",
+            fontSize: "9px",
+            color: "#5B6070",
+            textTransform:
+              "uppercase",
+            letterSpacing: ".06em",
+            marginBottom: "11px",
+          }}
+        >
+          Profile image
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "15px",
+          }}
+        >
+          {/* IMAGE */}
+
+          <label
+            htmlFor="profile-image"
+            style={{
+              width: "68px",
+              height: "68px",
+              flexShrink: 0,
+              border:
+                "1px solid #CFCBBC",
+              background: "#FFFFFF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              overflow: "hidden",
+            }}
+          >
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Profile"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit:
+                    "cover",
+                }}
+              />
+            ) : (
+              <User
+                size={25}
+                strokeWidth={1}
+                color="#8A8F9B"
+              />
+            )}
+
+            <input
+              id="profile-image"
+              type="file"
+              accept="image/jpeg,image/png"
+              style={{
+                display: "none",
+              }}
+              onChange={(e) => {
+                const file =
+                  e.target.files?.[0];
+
+                if (file) {
+                  handleChange(
+                    "image",
+                    file
+                  );
+                }
+              }}
+            />
+          </label>
+
+          {/* UPLOAD INFO */}
+
+          <div>
+            <label
+              htmlFor="profile-image"
+              style={{
+                display:
+                  "inline-flex",
+                alignItems:
+                  "center",
+                gap: "6px",
+                padding:
+                  "7px 10px",
+                border:
+                  "1px solid #DFDACC",
+                background:
+                  "#FFFFFF",
+                color:
+                  "#171B24",
+                fontFamily:
+                  "'IBM Plex Mono', monospace",
+                fontSize: "8px",
+                textTransform:
+                  "uppercase",
+                letterSpacing:
+                  ".04em",
+                cursor:
+                  "pointer",
+              }}
+            >
+              <Upload size={12} />
+              {imagePreview
+                ? "Change image"
+                : "Upload image"}
+            </label>
+
+            <p
+              style={{
+                margin:
+                  "6px 0 0",
+                fontSize: "10px",
+                color:
+                  "#8A8F9B",
+              }}
+            >
+              JPG or PNG · Recommended
+              square image
+            </p>
+          </div>
+        </div>
+
+        {/* REMOVE BACKGROUND */}
+
+        {typeof data?.image ===
+          "object" &&
+          data?.image && (
+            <div
+              style={{
+                marginTop:
+                  "15px",
+                paddingTop:
+                  "12px",
+                borderTop:
+                  "1px solid #E8E5DC",
+                display: "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "space-between",
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    color:
+                      "#171B24",
+                  }}
+                >
+                  Remove background
+                </p>
+
+                <p
+                  style={{
+                    margin:
+                      "3px 0 0",
+                    fontSize: "9px",
+                    color:
+                      "#8A8F9B",
+                  }}
+                >
+                  Clean up the profile
+                  image automatically.
+                </p>
+              </div>
+
+              {/* SWITCH */}
+
+              <label
+                style={{
+                  position:
+                    "relative",
+                  width: "36px",
+                  height: "20px",
+                  cursor:
+                    "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={
+                    removeBackground
+                  }
+                  onChange={() =>
+                    setRemoveBackground(
+                      (prev) =>
+                        !prev
+                    )
+                  }
+                  style={{
+                    display:
+                      "none",
+                  }}
+                />
+
+                <span
+                  style={{
+                    position:
+                      "absolute",
+                    inset: 0,
+                    background:
+                      removeBackground
+                        ? "#C63B26"
+                        : "#CFCBC0",
+                    transition:
+                      "all .2s ease",
+                  }}
+                />
+
+                <span
+                  style={{
+                    position:
+                      "absolute",
+                    width: "14px",
+                    height: "14px",
+                    top: "3px",
+                    left:
+                      removeBackground
+                        ? "19px"
+                        : "3px",
+                    background:
+                      "#FFFFFF",
+                    transition:
+                      "all .2s ease",
+                  }}
+                />
+              </label>
+            </div>
+          )}
+      </div>
+
+      {/* ========================================== */}
+      {/* FORM FIELDS */}
+      {/* ========================================== */}
+
+      <div
+        style={{
+          paddingTop:
+            "20px",
+        }}
+      >
+        {fields.map(
+          (field) => {
+            const Icon =
+              field.icon;
+
             return (
-                <div key={field.key} className='space-y-1 mt-5'>
-                    <label htmlFor="" className='flex items-center gap-2 text-sm font-medium text-gray-600'>
-                        <Icon className='size-4'/>
-                        {field.label}
-                        {field.required && <span className='text-red-500'>*</span>}
+              <div
+                key={field.key}
+                style={{
+                  marginBottom:
+                    "18px",
+                }}
+              >
+                {/* LABEL */}
 
-                    
-                    </label>
-                    <input type={field.type} value={data?.[field.key] || ''} onChange={(e)=>handleChange(field.key, e.target.value)} className='mt-1 w-full border px-3 py-2 border-gray-300 rounded-lg focus:ring focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm' placeholder={`Enter your ${field.label.toLowerCase()}`} required={field.required}/>
+                <label
+                  htmlFor={field.key}
+                  style={{
+                    display:
+                      "flex",
+                    alignItems:
+                      "center",
+                    gap: "6px",
+                    marginBottom:
+                      "7px",
+                    fontFamily:
+                      "'IBM Plex Mono', monospace",
+                    fontSize: "8px",
+                    textTransform:
+                      "uppercase",
+                    letterSpacing:
+                      ".05em",
+                    color:
+                      "#5B6070",
+                  }}
+                >
+                  <Icon
+                    size={12}
+                    strokeWidth={1.5}
+                  />
 
-                </div>
-            )
-        })}
+                  {field.label}
+
+                  {field.required && (
+                    <span
+                      style={{
+                        color:
+                          "#C63B26",
+                      }}
+                    >
+                      *
+                    </span>
+                  )}
+                </label>
+
+                {/* INPUT */}
+
+                <input
+                  id={field.key}
+                  type={field.type}
+                  value={
+                    data?.[
+                      field.key
+                    ] || ""
+                  }
+                  onChange={(e) =>
+                    handleChange(
+                      field.key,
+                      e.target.value
+                    )
+                  }
+                  placeholder={`Enter your ${field.label.toLowerCase()}`}
+                  required={
+                    field.required
+                  }
+                  style={{
+                    width: "100%",
+                    boxSizing:
+                      "border-box",
+                    height: "42px",
+                    padding:
+                      "0 12px",
+                    border:
+                      "1px solid #CFCBBC",
+                    borderRadius:
+                      "0px",
+                    outline: "none",
+                    background:
+                      "#FFFFFF",
+                    color:
+                      "#171B24",
+                    fontSize:
+                      "12px",
+                    fontFamily:
+                      "system-ui, sans-serif",
+                    transition:
+                      "border-color .15s ease, box-shadow .15s ease",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor =
+                      "#C63B26";
+                    e.target.style.boxShadow =
+                      "0 0 0 2px rgba(198,59,38,.08)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor =
+                      "#CFCBBC";
+                    e.target.style.boxShadow =
+                      "none";
+                  }}
+                />
+              </div>
+            );
+          }
+        )}
+      </div>
+
+      {/* ========================================== */}
+      {/* FOOTNOTE */}
+      {/* ========================================== */}
+
+      <div
+        style={{
+          marginTop:
+            "5px",
+          padding:
+            "12px 13px",
+          background:
+            "#F4EDE7",
+          borderLeft:
+            "2px solid #C63B26",
+        }}
+      >
+        <div
+          style={{
+            fontFamily:
+              "'IBM Plex Mono', monospace",
+            fontSize: "8px",
+            color:
+              "#8B4A32",
+            textTransform:
+              "uppercase",
+            letterSpacing:
+              ".05em",
+          }}
+        >
+          Editor's note
+        </div>
+
+        <p
+          style={{
+            margin:
+              "4px 0 0",
+            fontSize: "10px",
+            lineHeight: 1.5,
+            color:
+              "#5B6070",
+          }}
+        >
+          Keep your contact details
+          accurate. These are the first
+          details recruiters use when
+          reaching out.
+        </p>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default PersonalInfo
+export default PersonalInfo;

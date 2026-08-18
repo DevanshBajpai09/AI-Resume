@@ -1,215 +1,680 @@
-import { X, Sparkles, AlertTriangle } from "lucide-react"
-import { useEffect } from "react"
+import {
+  X,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle2,
+  Search,
+} from "lucide-react";
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const ATSModal = ({ resume, onClose }) => {
+  const score = Number(resume?.atsScore || 0);
 
-const scoreColor =
-resume.atsScore >= 80
-? "text-green-600"
-: resume.atsScore >= 60
-? "text-orange-500"
-: "text-red-500"
+  const scoreColor =
+    score >= 80
+      ? "#16A34A"
+      : score >= 60
+      ? "#F97316"
+      : "#EF4444";
 
-useEffect(() => {
-document.body.style.overflow = "hidden"
-return () => (document.body.style.overflow = "auto")
-}, [])
+  const scoreLabel =
+    score >= 80
+      ? "Excellent"
+      : score >= 60
+      ? "Good"
+      : "Needs Improvement";
 
-return (
+  const feedback = resume?.atsFeedback || [];
+  const missingKeywords = resume?.missingKeywords || [];
 
-<div
-className="
-fixed inset-0
-flex items-center justify-center
-bg-black/40 backdrop-blur-sm
-z-50
-animate-[fadeIn_0.25s_ease]
-"
->
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
 
-{/* Modal */}
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
 
-<div
-className="
-relative
-bg-white
-rounded-2xl
-shadow-2xl
-w-[540px]
-max-h-[85vh]
-overflow-y-auto
-scrollbar-hide
-p-7
-animate-[scaleIn_0.25s_ease]
-"
->
+    document.addEventListener("keydown", handleEscape);
 
-{/* Close Button */}
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
 
-<button
-onClick={onClose}
-className="
-absolute right-4 top-4
-p-1 rounded-md
-hover:bg-gray-100
-transition
-"
->
-<X size={18}/>
-</button>
+  const modal = (
+    <>
+      <style>
+        {`
+          @keyframes atsOverlayIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
 
-{/* Header */}
+          @keyframes atsModalIn {
+            from {
+              opacity: 0;
+              transform: translateY(12px) scale(0.98);
+            }
 
-<div className="flex items-center gap-2 mb-6">
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
 
-<div className="
-p-2 rounded-lg
-bg-orange-100
-">
-<Sparkles className="w-5 h-5 text-orange-500"/>
-</div>
+          .ats-modal-scroll::-webkit-scrollbar {
+            width: 6px;
+          }
 
-<h2 className="text-lg font-semibold">
-ATS Resume Analysis
-</h2>
+          .ats-modal-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
 
-</div>
+          .ats-modal-scroll::-webkit-scrollbar-thumb {
+            background: #d6d2c8;
+          }
 
-{/* Score Section */}
+          .ats-modal-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #d6d2c8 transparent;
+          }
+        `}
+      </style>
 
-<div className="mb-8">
+      {/* FULL SCREEN OVERLAY */}
+      <div
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+        style={{
+          position: "fixed",
+          inset: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 999999,
 
-<div className="flex justify-between items-center">
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
 
-<p className="text-sm text-gray-500">
-ATS Score
-</p>
+          padding: "24px",
+          boxSizing: "border-box",
 
-<span className={`text-sm font-semibold ${scoreColor}`}>
-{resume.atsScore >= 80
-? "Excellent"
-: resume.atsScore >= 60
-? "Good"
-: "Needs Improvement"}
-</span>
+          background: "rgba(23, 27, 36, 0.48)",
+          backdropFilter: "blur(5px)",
+          WebkitBackdropFilter: "blur(5px)",
 
-</div>
+          animation: "atsOverlayIn .2s ease-out",
+        }}
+      >
+        {/* MODAL */}
+        <div
+          onMouseDown={(e) => e.stopPropagation()}
+          className="ats-modal-scroll"
+          style={{
+            position: "relative",
 
-<div className={`text-4xl font-bold mt-1 ${scoreColor}`}>
-{resume.atsScore}%
-</div>
+            width: "100%",
+            maxWidth: "680px",
 
-{/* Score Bar */}
+            /*
+              IMPORTANT:
+              Don't use a fixed height.
+              This prevents the modal from jumping/clipping.
+            */
+            maxHeight: "calc(100vh - 48px)",
 
-<div className="w-full bg-gray-200 rounded-full h-2 mt-3 overflow-hidden">
+            overflowY: "auto",
 
-<div
-className="
-h-2 rounded-full
-bg-gradient-to-r
-from-orange-400
-to-orange-600
-transition-all duration-700
-"
-style={{width: `${resume.atsScore}%`}}
-></div>
+            background: "#FBFAF6",
+            border: "1px solid #DFDACC",
 
-</div>
+            boxShadow:
+              "0 30px 80px rgba(23,27,36,.25)",
 
-</div>
+            animation:
+              "atsModalIn .28s cubic-bezier(.22,1,.36,1)",
+          }}
+        >
+          {/* TOP ACCENT */}
+          <div
+            style={{
+              height: "3px",
+              width: "100%",
+              background: `linear-gradient(
+                90deg,
+                ${scoreColor},
+                #F59E0B
+              )`,
+            }}
+          />
 
-{/* Suggestions */}
+          {/* HEADER */}
+          <div
+            style={{
+              padding: "20px 24px",
+              borderBottom: "1px solid #DFDACC",
 
-<h3 className="font-semibold mb-3 flex items-center gap-2">
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
 
-<AlertTriangle className="w-4 h-4 text-orange-500"/>
+              background: "#FBFAF6",
 
-Suggestions to Improve
+              position: "sticky",
+              top: 0,
+              zIndex: 5,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: "38px",
+                  height: "38px",
 
-</h3>
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
 
-<ul className="space-y-3 mb-7">
+                  background: "#F8EDEA",
+                  border: "1px solid #E8C9C2",
+                }}
+              >
+                <Sparkles
+                  size={18}
+                  color="#C63B26"
+                  strokeWidth={1.7}
+                />
+              </div>
 
-{resume.atsFeedback?.map((item,index)=>{
+              <div>
+                <div
+                  style={{
+                    fontFamily:
+                      "'IBM Plex Mono', monospace",
+                    fontSize: "8px",
+                    textTransform: "uppercase",
+                    letterSpacing: ".09em",
+                    color: "#C63B26",
+                  }}
+                >
+                  Resume diagnostics
+                </div>
 
-const cleanText = item.replace(/\*\*/g,"")
+                <h2
+                  style={{
+                    margin: "3px 0 0",
+                    fontFamily: "'Newsreader', serif",
+                    fontSize: "23px",
+                    fontWeight: 500,
+                    color: "#171B24",
+                  }}
+                >
+                  ATS Resume Analysis
+                </h2>
+              </div>
+            </div>
 
-const isImportant =
-cleanText.toLowerCase().includes("critical")
+            {/* CLOSE */}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close ATS analysis"
+              style={{
+                width: "34px",
+                height: "34px",
 
-return (
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
 
-<li
-key={index}
-className={`
-p-3 rounded-lg text-sm
-leading-relaxed
-flex gap-3
-transition
-${isImportant
-? "bg-red-50 border border-red-200 text-red-700"
-: "bg-orange-50 border border-orange-100 text-gray-700"}
-`}
->
+                background: "transparent",
+                border: "1px solid transparent",
 
-<span
-className={`font-bold mt-[2px]
-${isImportant
-? "text-red-500"
-: "text-orange-500"}
-`}
->
-•
-</span>
+                color: "#5B6070",
+                cursor: "pointer",
 
-<span>
-{cleanText}
-</span>
+                transition: "all .15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background =
+                  "#F1EFE8";
 
-</li>
+                e.currentTarget.style.borderColor =
+                  "#DFDACC";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background =
+                  "transparent";
 
-)
+                e.currentTarget.style.borderColor =
+                  "transparent";
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-})}
+          {/* CONTENT */}
+          <div
+            style={{
+              padding: "24px",
+            }}
+          >
+            {/* SCORE */}
+            <div
+              style={{
+                border: "1px solid #DFDACC",
+                background: "#FFFFFF",
+                padding: "20px",
+                marginBottom: "26px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontFamily:
+                        "'IBM Plex Mono', monospace",
+                      fontSize: "8px",
+                      textTransform: "uppercase",
+                      letterSpacing: ".08em",
+                      color: "#8A8F9B",
+                    }}
+                  >
+                    ATS compatibility
+                  </div>
 
-</ul>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      gap: "7px",
+                      marginTop: "5px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily:
+                          "'Newsreader', serif",
+                        fontSize: "48px",
+                        lineHeight: 1,
+                        fontWeight: 500,
+                        color: scoreColor,
+                      }}
+                    >
+                      {score}
+                    </span>
 
-{/* Missing Keywords */}
+                    <span
+                      style={{
+                        fontFamily:
+                          "'IBM Plex Mono', monospace",
+                        fontSize: "10px",
+                        color: "#8A8F9B",
+                      }}
+                    >
+                      / 100
+                    </span>
+                  </div>
+                </div>
 
-<h3 className="font-semibold mb-3">
-Missing Keywords
-</h3>
+                <div
+                  style={{
+                    padding: "6px 10px",
+                    border: `1px solid ${scoreColor}`,
+                    color: scoreColor,
 
-<div className="flex flex-wrap gap-2">
+                    fontFamily:
+                      "'IBM Plex Mono', monospace",
 
-{resume.missingKeywords?.map((kw,i)=>(
+                    fontSize: "8px",
+                    textTransform: "uppercase",
+                    letterSpacing: ".06em",
+                  }}
+                >
+                  {scoreLabel}
+                </div>
+              </div>
 
-<span
-key={i}
-className="
-px-3 py-1
-text-xs font-medium
-bg-red-100
-text-red-600
-rounded-full
-border border-red-200
-"
->
+              {/* SCORE BAR */}
+              <div
+                style={{
+                  width: "100%",
+                  height: "6px",
+                  background: "#ECEAE3",
+                  marginTop: "18px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${Math.min(
+                      Math.max(score, 0),
+                      100
+                    )}%`,
 
-{kw}
+                    background: scoreColor,
 
-</span>
+                    transition:
+                      "width .8s cubic-bezier(.22,1,.36,1)",
+                  }}
+                />
+              </div>
 
-))}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
 
-</div>
+                  marginTop: "7px",
 
-</div>
+                  fontFamily:
+                    "'IBM Plex Mono', monospace",
 
-</div>
+                  fontSize: "7px",
+                  color: "#A4A7AF",
 
-)
+                  textTransform: "uppercase",
+                }}
+              >
+                <span>Needs work</span>
+                <span>Strong match</span>
+              </div>
+            </div>
 
-}
+            {/* SUGGESTIONS */}
+            <div style={{ marginBottom: "28px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "12px",
+                }}
+              >
+                <AlertTriangle
+                  size={15}
+                  color="#C63B26"
+                />
 
-export default ATSModal
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: "'Newsreader', serif",
+                    fontSize: "21px",
+                    fontWeight: 500,
+                    color: "#171B24",
+                  }}
+                >
+                  Suggestions to improve
+                </h3>
+              </div>
+
+              {feedback.length > 0 ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  {feedback.map((item, index) => {
+                    const cleanText = String(
+                      item
+                    ).replace(/\*\*/g, "");
+
+                    const isImportant =
+                      cleanText
+                        .toLowerCase()
+                        .includes("critical");
+
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          padding: "13px 14px",
+
+                          display: "flex",
+                          gap: "12px",
+
+                          border: isImportant
+                            ? "1px solid #F0C8C2"
+                            : "1px solid #DFDACC",
+
+                          background: isImportant
+                            ? "#FFF5F3"
+                            : "#FFFFFF",
+
+                          color: isImportant
+                            ? "#A52E1C"
+                            : "#536078",
+
+                          fontSize: "12px",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            minWidth: "24px",
+                            color: isImportant
+                              ? "#C63B26"
+                              : "#9A9EAA",
+
+                            fontFamily:
+                              "'IBM Plex Mono', monospace",
+
+                            fontSize: "9px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {String(index + 1).padStart(
+                            2,
+                            "0"
+                          )}
+                        </span>
+
+                        <span>{cleanText}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: "16px",
+                    border:
+                      "1px solid #DFDACC",
+                    background: "#FFFFFF",
+
+                    color: "#5B6070",
+                    fontSize: "12px",
+
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <CheckCircle2
+                    size={15}
+                    color="#16A34A"
+                  />
+
+                  No major issues detected.
+                </div>
+              )}
+            </div>
+
+            {/* MISSING KEYWORDS */}
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "12px",
+                }}
+              >
+                <Search
+                  size={15}
+                  color="#C63B26"
+                />
+
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily:
+                      "'Newsreader', serif",
+                    fontSize: "21px",
+                    fontWeight: 500,
+                    color: "#171B24",
+                  }}
+                >
+                  Missing keywords
+                </h3>
+              </div>
+
+              {missingKeywords.length > 0 ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "7px",
+                  }}
+                >
+                  {missingKeywords.map(
+                    (keyword, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          padding: "6px 9px",
+
+                          background: "#F8EDEA",
+                          border:
+                            "1px solid #E8C9C2",
+
+                          color: "#A52E1C",
+
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+
+                          letterSpacing: ".03em",
+                        }}
+                      >
+                        {keyword}
+                      </span>
+                    )
+                  )}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: "14px",
+
+                    border:
+                      "1px solid #DFDACC",
+
+                    background: "#FFFFFF",
+
+                    color: "#5B6070",
+                    fontSize: "12px",
+                  }}
+                >
+                  No missing keywords detected.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div
+            style={{
+              borderTop: "1px solid #DFDACC",
+
+              padding: "12px 24px",
+
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+
+              background: "#F7F5EF",
+            }}
+          >
+            <span
+              style={{
+                fontFamily:
+                  "'IBM Plex Mono', monospace",
+
+                fontSize: "7px",
+                color: "#8A8F9B",
+
+                textTransform: "uppercase",
+                letterSpacing: ".06em",
+              }}
+            >
+              ATS analysis
+            </span>
+
+            <button
+              onClick={onClose}
+              type="button"
+              style={{
+                border: "none",
+                background: "transparent",
+
+                color: "#5B6070",
+
+                fontFamily:
+                  "'IBM Plex Mono', monospace",
+
+                fontSize: "8px",
+                textTransform: "uppercase",
+                letterSpacing: ".05em",
+
+                cursor: "pointer",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  /*
+    THIS IS THE IMPORTANT PART.
+    The modal is rendered directly into BODY,
+    NOT inside ResumeBuilder.
+  */
+  return createPortal(modal, document.body);
+};
+
+export default ATSModal;

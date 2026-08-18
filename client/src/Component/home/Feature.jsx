@@ -1,81 +1,87 @@
-import { Zap } from 'lucide-react';
-import React, { useState } from 'react'
-import Title from './Title';
-import { useSelector } from 'react-redux';
-import FeatureSkeleton from '../skeleton/FeatureSkeleton';
+import React from "react";
+import Title from "./Title";
+
+const items = [
+  {
+    tag: "§ 1",
+    title: "Live ATS scoring",
+    desc: "A running match percentage against the job description, updated as you edit — so you can watch a weak resume become a strong one in real time.",
+  },
+  {
+    tag: "§ 2",
+    title: "Track-changes history",
+    desc: "Every AI suggestion is logged like a redline. Roll back to an earlier draft, or compare two versions side by side before you export.",
+  },
+  {
+    tag: "§ 3",
+    title: "Export, clean",
+    desc: "PDF, DOCX, or a shareable link — formatted to survive the ATS parsers that strip out tables, icons, and columns from fancier templates.",
+  },
+  {
+    tag: "§ 4",
+    title: "One resume, many roles",
+    desc: "Keep a base draft and branch a tailored version per application, without losing track of which line was written for which job.",
+  },
+];
 
 const Feature = () => {
-    const [isHover, setIsHover] = useState(null);
-    const { loading } = useSelector((state) => state.auth);
-    const isOnline = useSelector((state) => state.network.isOnline);
+  return (
+    <section
+      id="features"
+      className="
+        scroll-mt-12
+        bg-[#FBFAF6]
+        text-[#171B24]
+        px-6
+        md:pl-24
+        md:pr-16
+      "
+    >
+      <div className="w-full max-w-5xl py-20">
 
-    if (loading || !isOnline) {
-        return <FeatureSkeleton />;
-    }
+        <Title
+          eyebrow="What's in the margins"
+          title="Built like an editor, not a form."
+          description="Our streamlined process helps you create a professional resume in minutes with AI-powered tools that edit, not just template."
+        />
 
+        <div className="mt-10 border-t border-[#DFDACC]">
 
+          {items.map((item, i) => (
+            <div
+              key={i}
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-[70px_1fr]
+                gap-2
+                sm:gap-7
+                py-7
+                border-b
+                border-[#DFDACC]
+                group
+              "
+            >
+              <div className="ff-mono text-[11px] text-[#5B6070] pt-1">
+                {item.tag}
+              </div>
 
+              <div>
+                <h3 className="ff-serif text-xl font-medium group-hover:text-[#2547D0] transition-colors">
+                  {item.title}
+                </h3>
 
-    return (
-        <>
-            <div id='features' className='flex flex-col items-center my-8 scroll-mt-12'>
-                <div className="flex items-center gap-2 text-sm text-green-800 bg-green-400/10 border border-green-200 rounded-full px-6 py-1.5">
-                    <Zap width={14} />
-                    <span>Simple Process</span>
-                </div>
-                <Title title="Build your resume" description="Our streamlined process heps you create a professional resume in minutes with intelligence AI-powered tools and features." />
-                <div class="flex flex-col md:flex-row items-center justify-center xl:mt-10">
-                    <img
-                        class="max-w-2xl w-full
-           transition-all duration-500 ease-out
-           hover:-translate-y-2 hover:scale-[1.02]"
-                        src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png"
-                        alt=""
-                    />
-                    <div class="space-y-6 px-4 md:px-0" >
-                        <div onMouseEnter={() => setIsHover(0)}
-                            onMouseLeave={() => setIsHover(null)} class={`flex items-center justify-center transition-colors ${isHover == 0 ? "border-violet-300 ring-offset-2 ring-1 ring-violet-300  bg-violet-100" : ""} rounded-xl py-4 pr-4 gap-6 max-w-md`}>
-                            <div class="p-6 aspect-square">
-                                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M14 18.667V24.5m4.668-8.167V24.5m4.664-12.833V24.5m2.333-21L15.578 13.587a.584.584 0 0 1-.826 0l-3.84-3.84a.583.583 0 0 0-.825 0L2.332 17.5M4.668 21v3.5m4.664-8.167V24.5" stroke="#7F22FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </div>
-                            <div class="space-y-2">
-                                <h3 class="text-base font-semibold text-slate-700">Real-Time Analytics</h3>
-                                <p class="text-sm text-slate-600">Get instant insights into your finances with live dashboards.</p>
-                            </div>
-                        </div>
-                        <div onMouseEnter={() => setIsHover(1)}
-                            onMouseLeave={() => setIsHover(null)} class={`flex items-center justify-center transition-colors ${isHover == 1 ? "border-green-300 bg-green-100 ring-offset-2 ring-1 ring-green-300 " : ""} rounded-xl py-4 pr-4 gap-6 max-w-md`}>
-                            <div class="p-6 aspect-square">
-                                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M14 11.667A2.333 2.333 0 0 0 11.667 14c0 1.19-.117 2.929-.304 4.667m4.972-3.36c0 2.776 0 7.443-1.167 10.36m5.004-1.144c.14-.7.502-2.683.583-3.523M2.332 14a11.667 11.667 0 0 1 21-7m-21 11.667h.01m23.092 0c.233-2.333.152-6.246 0-7" stroke="#00A63E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M5.832 22.75C6.415 21 6.999 17.5 6.999 14a7 7 0 0 1 .396-2.333m2.695 13.999c.245-.77.525-1.54.665-2.333m-.255-15.4A7 7 0 0 1 21 14v2.333" stroke="#00A63E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </div>
-                            <div class="space-y-2">
-                                <h3 class="text-base font-semibold text-slate-700">Bank-Grade Security</h3>
-                                <p class="text-sm text-slate-600">End-to-end encryption, 2FA, compliance with GDPR standards.</p>
-                            </div>
-                        </div>
-                        <div onMouseEnter={() => setIsHover(2)}
-                            onMouseLeave={() => setIsHover(null)} class={`flex items-center justify-center transition-colors ${isHover == 2 ? "border-orange-300 bg-orange-100 ring-offset-2 ring-1 ring-orange-300 " : ""} rounded-xl py-4 pr-4 gap-6 max-w-md`}>
-                            <div class="p-6 aspect-square">
-                                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4.668 25.666h16.333a2.333 2.333 0 0 0 2.334-2.333V8.166L17.5 2.333H7a2.333 2.333 0 0 0-2.333 2.333v4.667" stroke="#F54900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M16.332 2.333V7a2.334 2.334 0 0 0 2.333 2.333h4.667m-21 8.167h11.667M10.5 21l3.5-3.5-3.5-3.5" stroke="#F54900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </div>
-                            <div class="space-y-2">
-                                <h3 class="text-base font-semibold text-slate-700">Customizable Reports</h3>
-                                <p class="text-sm text-slate-600">Export professional, audit-ready financial reports for tax or internal review.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <p className="text-[14.5px] text-[#5B6070] leading-relaxed mt-2 max-w-2xl">
+                  {item.desc}
+                </p>
+              </div>
             </div>
-        </>
-    )
-}
+          ))}
 
-export default Feature
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Feature;

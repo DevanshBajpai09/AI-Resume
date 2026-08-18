@@ -11,6 +11,7 @@ import analyticsRouter from "./routes/analyticsRouter.js";
 import {Server} from "socket.io"  
 import http from "http"
 import notificationRouter from "./routes/notificationRoute.js";
+import passport from "./config/passport.js";
 
 dotenv.config()
 
@@ -48,6 +49,7 @@ app.set("trust proxy", 1);
 
 app.use(express.json());
 app.use(cors());
+app.use(passport.initialize());
 
 app.get("/", (req, res) => res.send("Server is live"));
 app.use("/api/users", userRouter);

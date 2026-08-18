@@ -1,30 +1,106 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import CallToActionSkeleton from '../skeleton/CallToActionSkeleton';
-import { useSelector } from 'react-redux';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const CallToAction = () => {
-    const { loading } = useSelector((state) => state.auth);
-const isOnline = useSelector((state) => state.network.isOnline);
-
-
-if (loading || !isOnline) {
-  return <CallToActionSkeleton />;
-}
-
   return (
-    <div id='cta' >
-        <div className='border-y border-dashed border-slate-200 mt-28 w-full max-w-5xl mx-auto px-10 sm:px-16'>
-            <div className="flex flex-col md:flex-row text-center md:text-left items-center justify-between gap-8 px-3 md:px-10 border-x border-dashed border-slate-200 py-16 sm:py-20 -mt-10 -mb-10 w-full">
-                <p className="text-xl font-medium max-w-md text-slate-800">Star the repo and join the growing PrebuiltUI community.</p>
-                <Link to="/app"  className="flex items-center gap-2 rounded py-3 px-8 bg-green-600 hover:bg-green-700 transition text-white">
-                    <span>Get Started</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                </Link>
-            </div>
-        </div>
-    </div>
-  )
-}
+    <>
+      <section
+        id="cta"
+        style={{
+          margin: "0 96px 90px",
+          background: "#171B24",
+          color: "#FBFAF6",
+          padding: "64px 60px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "30px",
+          position: "relative",
+          zIndex: 2,
+          borderRadius: "2px",
+        }}
+      >
+        {/* CTA text */}
+        <h2
+          style={{
+            fontFamily: "'Newsreader', serif",
+            fontSize: "30px",
+            fontWeight: 500,
+            lineHeight: 1.08,
+            letterSpacing: "-0.01em",
+            color: "#FBFAF6",
+            maxWidth: "420px",
+            margin: 0,
+          }}
+        >
+          Your next draft is one upload away.
+        </h2>
 
-export default CallToAction
+        {/* CTA button */}
+        <Link
+          to="/app"
+          style={{
+            background: "#FBFAF6",
+            color: "#171B24",
+            padding: "15px 28px",
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: "12.5px",
+            letterSpacing: "0.04em",
+            borderRadius: "3px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            textDecoration: "none",
+            border: "1px solid transparent",
+            transition:
+              "transform .15s ease, box-shadow .15s ease",
+            whiteSpace: "nowrap",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow =
+              "3px 3px 0 #FCE388";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
+        >
+          <span>Start the review</span>
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </Link>
+      </section>
+
+      <style>{`
+        @media (max-width: 820px) {
+          #cta {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            margin: 0 24px 64px 52px !important;
+            padding: 44px 30px !important;
+          }
+
+          #cta h2 {
+            font-size: 28px !important;
+          }
+        }
+      `}</style>
+    </>
+  );
+};
+
+export default CallToAction;

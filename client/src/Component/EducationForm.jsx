@@ -1,144 +1,720 @@
-import { GraduationCap, Plus, Trash2, Sparkles } from 'lucide-react'
-import React from 'react'
+import {
+  GraduationCap,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import React from "react";
 
 const EducationForm = ({ data, onChange }) => {
-    console.log("data",data)
-    const AddEducation = () => {
-        const newEducation = {
-            institution: "",
-            degree: "",
-            field: "",
-            graduation_date: "",
-            gpa: ""
 
+  const AddEducation = () => {
+    const newEducation = {
+      institution: "",
+      degree: "",
+      field: "",
+      graduation_date: "",
+      gpa: "",
+    };
 
-        }
-        onChange([...data, newEducation])
-    }
+    onChange([...data, newEducation]);
+  };
 
+  const removeEducation = (index) => {
+    const updated = data.filter(
+      (_, i) => i !== index
+    );
 
-    const removeEducation = (index) => {
-        const updated = data.filter((_, i) => i !== index)
-        onChange(updated)
+    onChange(updated);
+  };
 
-    }
+  const updateEducation = (
+    index,
+    field,
+    value
+  ) => {
+    const updated = [...data];
 
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
 
-    const updateEducation = (index, field, value) => {
-        const updated = [...data]
-        updated[index] = { ...updated[index], [field]: value }
-        onChange(updated)
+    onChange(updated);
+  };
 
-    }
-    return (
-        <div className='space-y-6'>
-            <div className='flex items-center justify-between'>
-                <div>
-                    <h3 className='flex items-center gap-2 text-lg font-semibold text-gray-900'>Education</h3>
-                    <p className='text-sm text-gray-500'>Add your education details</p>
+  return (
+    <div
+      style={{
+        background: "#FBFAF6",
+        color: "#171B24",
+        minHeight: "100%",
+      }}
+    >
+
+      {/* ================================= */}
+      {/* HEADER */}
+      {/* ================================= */}
+
+      <div
+        style={{
+          paddingBottom: "20px",
+          borderBottom:
+            "1px solid #DFDACC",
+        }}
+      >
+        <div
+          style={{
+            fontFamily:
+              "'IBM Plex Mono', monospace",
+            fontSize: "9px",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+            color: "#C63B26",
+            marginBottom: "5px",
+          }}
+        >
+          § 04 / Education
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "15px",
+          }}
+        >
+
+          <div>
+
+            <h3
+              style={{
+                margin: 0,
+                fontFamily:
+                  "'Newsreader', serif",
+                fontSize: "27px",
+                fontWeight: 500,
+                color: "#171B24",
+              }}
+            >
+              Education
+            </h3>
+
+            <p
+              style={{
+                margin: "5px 0 0",
+                fontSize: "12px",
+                color: "#5B6070",
+                lineHeight: 1.5,
+              }}
+            >
+              Add your academic background,
+              degree, and qualifications.
+            </p>
+
+          </div>
+
+          {/* ADD EDUCATION */}
+
+          <button
+            type="button"
+            onClick={AddEducation}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              flexShrink: 0,
+              padding: "8px 11px",
+              border: "1px solid #CFCBBC",
+              background: "#FFFFFF",
+              color: "#C63B26",
+              fontFamily:
+                "'IBM Plex Mono', monospace",
+              fontSize: "8px",
+              textTransform: "uppercase",
+              letterSpacing: ".04em",
+              cursor: "pointer",
+              transition: "all .2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background =
+                "#F4EDE7";
+              e.currentTarget.style.borderColor =
+                "#C63B26";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background =
+                "#FFFFFF";
+              e.currentTarget.style.borderColor =
+                "#CFCBBC";
+            }}
+          >
+            <Plus size={13} />
+            Add Education
+          </button>
+
+        </div>
+      </div>
+
+      {/* ================================= */}
+      {/* EMPTY STATE */}
+      {/* ================================= */}
+
+      {data.length === 0 ? (
+
+        <div
+          style={{
+            padding: "55px 20px",
+            textAlign: "center",
+            borderBottom:
+              "1px solid #DFDACC",
+          }}
+        >
+
+          <GraduationCap
+            size={38}
+            strokeWidth={1}
+            color="#A7A49A"
+            style={{
+              margin: "0 auto 12px",
+            }}
+          />
+
+          <p
+            style={{
+              margin: 0,
+              fontFamily:
+                "'Newsreader', serif",
+              fontSize: "20px",
+              color: "#171B24",
+            }}
+          >
+            No education added
+          </p>
+
+          <p
+            style={{
+              margin:
+                "5px 0 16px",
+              fontSize: "11px",
+              color: "#7A7E89",
+            }}
+          >
+            Add your academic history
+            to get started.
+          </p>
+
+          <button
+            type="button"
+            onClick={AddEducation}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "8px 12px",
+              border:
+                "1px solid #CFCBBC",
+              background:
+                "#FFFFFF",
+              color:
+                "#C63B26",
+              fontFamily:
+                "'IBM Plex Mono', monospace",
+              fontSize: "8px",
+              textTransform:
+                "uppercase",
+              letterSpacing:
+                ".04em",
+              cursor:
+                "pointer",
+            }}
+          >
+            <Plus size={12} />
+            Add Education
+          </button>
+
+        </div>
+
+      ) : (
+
+        /* ================================= */
+        /* EDUCATION LIST */
+        /* ================================= */
+
+        <div
+          style={{
+            paddingTop: "20px",
+          }}
+        >
+
+          {data.map(
+            (education, index) => (
+
+              <div
+                key={index}
+                style={{
+                  marginBottom:
+                    "20px",
+                  border:
+                    "1px solid #DFDACC",
+                  background:
+                    "#FFFFFF",
+                }}
+              >
+
+                {/* CARD HEADER */}
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems:
+                      "center",
+                    justifyContent:
+                      "space-between",
+                    padding:
+                      "12px 14px",
+                    borderBottom:
+                      "1px solid #DFDACC",
+                    background:
+                      "#F7F5EF",
+                  }}
+                >
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems:
+                        "center",
+                      gap: "9px",
+                    }}
+                  >
+
+                    <span
+                      style={{
+                        fontFamily:
+                          "'IBM Plex Mono', monospace",
+                        fontSize: "9px",
+                        color:
+                          "#C63B26",
+                      }}
+                    >
+                      0{index + 1}
+                    </span>
+
+                    <span
+                      style={{
+                        fontFamily:
+                          "'IBM Plex Mono', monospace",
+                        fontSize: "9px",
+                        textTransform:
+                          "uppercase",
+                        letterSpacing:
+                          ".05em",
+                        color:
+                          "#5B6070",
+                      }}
+                    >
+                      Education
+                    </span>
+
+                  </div>
+
+                  {/* DELETE */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeEducation(
+                        index
+                      )
+                    }
+                    style={{
+                      border: "none",
+                      background:
+                        "transparent",
+                      color:
+                        "#9A4B40",
+                      cursor:
+                        "pointer",
+                      padding: "4px",
+                    }}
+                    title="Remove education"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+
                 </div>
-                <button onClick={AddEducation} className='flex cursor-pointer items-center gap-2 px-3 py-1 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors'>
-                    <Plus size={14} /> Add Education
-                </button>
-            </div>
 
-            {data.length === 0 ? (
-                <div className='text-gray-500 text-center py-8'>
-                    <GraduationCap className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>No Education added here</p>
-                    <p className='text-sm'>Click "Add Education" to get started.</p>
-                </div>
-            ) : (
-                <div className='space-y-4'>
-                    {data.map((education, index) => (
-                        <div key={index} className='p-4 border border-gray-200 rounded-lg space-y-3'>
-                            <div className='flex justify-between items-start'>
-                                <h4>Education #{index + 1}</h4>
-                                <button onClick={() => removeEducation(index)} className='text-red-500 cursor-pointer hover:text-red-700 transition-colors'>
-                                    <Trash2 className='size-4' />
-                                </button>
+                {/* CARD BODY */}
 
-                            </div>
-                            <div className='grid md:grid-cols-2 gap-3'>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs font-medium text-gray-600">
-                                        Institute Name
-                                    </label>
-                                    <input
-                                        value={education.institution || ""}
-                                        onChange={(e) => updateEducation(index, "institution", e.target.value)}
-                                        type="text"
-                                        placeholder="Institute Name"
-                                        className="px-3 py-2 border border-gray-400 text-sm rounded-lg focus:ring focus:ring-blue-500 outline-none"
-                                    />
-                                </div>
+                <div
+                  style={{
+                    padding: "15px",
+                  }}
+                >
 
-                                    {/* degree */}
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-medium text-gray-600">
-                                            Degree
-                                        </label>
-                                        <input
-                                            value={education.degree || ""}
-                                            onChange={(e) => updateEducation(index, "degree", e.target.value)}
-                                            type="text"
-                                            placeholder="Degree"
-                                            className="px-3 py-2 text-sm border border-gray-400 rounded-lg  focus:ring focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
+                  {/* INSTITUTION + DEGREE */}
 
-                                    {/* Field of Study */}
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-medium text-gray-600">
-                                            Field
-                                        </label>
-                                        <input
-                                            value={education.field || ""}
-                                            onChange={(e) => updateEducation(index, "field", e.target.value)}
-                                            type="text"
-                                            placeholder='Field of study'
-                                            className="px-3 py-2 text-sm border border-gray-400 rounded-lg focus:ring focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "1fr 1fr",
+                      gap: "12px",
+                    }}
+                  >
 
-                                    {/* graduation date */}
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-medium text-gray-600">
-                                            Graduation Date
-                                        </label>
-                                        <input
-                                            value={education.graduation_date || ""}
-                                            onChange={(e) => updateEducation(index, "graduation_date", e.target.value)}
-                                            type="month"
-                                            className="px-3 py-2 border border-gray-400 text-sm rounded-lg  focus:ring focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
+                    {/* INSTITUTION */}
 
-                                    {/* GPA */}
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-medium text-gray-600">
-                                            GPA
-                                        </label>
-                                        <input type="number" placeholder='GPA(Optional)' value={education.gpa || ""} onChange={(e) => updateEducation(index, "gpa", e.target.value)} className='px-3 py-2 border border-gray-400 rounded text-sm focus:ring focus:ring-blue-500 outline-none' />
-                                    </div>
-                                </div>
+                    <div>
 
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Institute Name
+                      </label>
 
+                      <input
+                        type="text"
+                        value={
+                          education.institution ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          updateEducation(
+                            index,
+                            "institution",
+                            e.target
+                              .value
+                          )
+                        }
+                        placeholder="Institute Name"
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            "#FFFFFF",
+                          color:
+                            "#171B24",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
 
-
-
-
-
-
-                                        </div>
-                                    
-                                ))}
-                            </div>
-                        )}
                     </div>
-                )
-            }
-            
-            export default EducationForm
-            
-           
+
+                    {/* DEGREE */}
+
+                    <div>
+
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Degree
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          education.degree ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          updateEducation(
+                            index,
+                            "degree",
+                            e.target
+                              .value
+                          )
+                        }
+                        placeholder="Degree"
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            "#FFFFFF",
+                          color:
+                            "#171B24",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
+
+                    </div>
+
+                  </div>
+
+                  {/* FIELD + GRADUATION */}
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "1fr 1fr",
+                      gap: "12px",
+                      marginTop:
+                        "15px",
+                    }}
+                  >
+
+                    {/* FIELD */}
+
+                    <div>
+
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Field of Study
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          education.field ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          updateEducation(
+                            index,
+                            "field",
+                            e.target
+                              .value
+                          )
+                        }
+                        placeholder="Field of study"
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            "#FFFFFF",
+                          color:
+                            "#171B24",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
+
+                    </div>
+
+                    {/* GRADUATION DATE */}
+
+                    <div>
+
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Graduation Date
+                      </label>
+
+                      <input
+                        type="month"
+                        value={
+                          education.graduation_date ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          updateEducation(
+                            index,
+                            "graduation_date",
+                            e.target
+                              .value
+                          )
+                        }
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            "#FFFFFF",
+                          color:
+                            "#171B24",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
+
+                    </div>
+
+                  </div>
+
+                  {/* GPA */}
+
+                  <div
+                    style={{
+                      marginTop:
+                        "15px",
+                      maxWidth:
+                        "50%",
+                    }}
+                  >
+
+                    <label
+                      style={{
+                        display:
+                          "block",
+                        marginBottom:
+                          "6px",
+                        fontFamily:
+                          "'IBM Plex Mono', monospace",
+                        fontSize: "8px",
+                        textTransform:
+                          "uppercase",
+                        letterSpacing:
+                          ".05em",
+                        color:
+                          "#5B6070",
+                      }}
+                    >
+                      GPA
+                    </label>
+
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={
+                        education.gpa ||
+                        ""
+                      }
+                      onChange={(e) =>
+                        updateEducation(
+                          index,
+                          "gpa",
+                          e.target.value
+                        )
+                      }
+                      placeholder="GPA (Optional)"
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        boxSizing:
+                          "border-box",
+                        padding:
+                          "0 11px",
+                        border:
+                          "1px solid #CFCBBC",
+                        borderRadius:
+                          "0",
+                        outline:
+                          "none",
+                        background:
+                          "#FFFFFF",
+                        color:
+                          "#171B24",
+                        fontSize:
+                          "12px",
+                      }}
+                    />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      )}
+
+    </div>
+  );
+};
+
+export default EducationForm;

@@ -1,30 +1,83 @@
-import React from 'react'
-import Title from './Title'
-import { BookUser } from 'lucide-react'
-import TestimonialHover from './TestimonialHover'
-import { useSelector } from 'react-redux'
-import TestimonialSkeleton from '../skeleton/TestimonialSkeleton'
+import React from "react";
+import TestimonialHover from "./TestimonialHover";
 
 const Testimonial = () => {
-    const { loading } = useSelector((state) => state.auth);
-const isOnline = useSelector((state) => state.network.isOnline);
-if (loading || !isOnline) {
-  return <TestimonialSkeleton />;
-}
+  return (
+    <>
+      <section
+        id="testimonials"
+        style={{
+          background: "#F3F1EA",
+          padding: "90px 96px",
+          position: "relative",
+          zIndex: 2,
+          overflow: "hidden",
+        }}
+      >
+        {/* Section heading */}
+        <div
+          style={{
+            maxWidth: "560px",
+            marginBottom: "40px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: "11.5px",
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "#5B6070",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <span
+              style={{
+                width: "14px",
+                height: "1px",
+                background: "#C63B26",
+                display: "inline-block",
+              }}
+            />
 
-    return (
-        <div id='testimonials' className='flex flex-col items-center my-8 scroll-mt-12'>
-            <div className="flex items-center gap-2 text-sm text-green-800 bg-green-400/10 border border-green-200 rounded-full px-6 py-1.5">
-                <BookUser height={14} />
-                <span>Testimonials</span>
-            </div>
-            <Title title="Don't just take our words" description="Hear what our users say about us. We're always looking for ways to improve. If you have a positive experience with us, leave a review." />
+            Notes from the margin
+          </div>
 
-            <div>
-                <TestimonialHover/>
-            </div>
+          <h2
+            style={{
+              fontFamily: "'Newsreader', serif",
+              fontWeight: 500,
+              fontSize: "36px",
+              lineHeight: 1.08,
+              letterSpacing: "-0.01em",
+              color: "#171B24",
+              marginTop: "16px",
+              marginBottom: "0",
+            }}
+          >
+            What reviewers actually wrote back.
+          </h2>
         </div>
-    )
-}
 
-export default Testimonial
+        {/* KEEP THE SLIDING TESTIMONIALS */}
+        <TestimonialHover />
+      </section>
+
+      <style>{`
+        @media (max-width: 760px) {
+          #notes {
+            padding: 64px 24px 64px 52px !important;
+          }
+
+          #notes h2 {
+            font-size: 32px !important;
+          }
+        }
+      `}</style>
+    </>
+  );
+};
+
+export default Testimonial;

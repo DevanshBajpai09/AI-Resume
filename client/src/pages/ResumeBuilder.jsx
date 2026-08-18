@@ -1,450 +1,1825 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useParams } from "react-router-dom";
 
-import { ArrowLeftIcon, Briefcase, ChevronLeft, ChevronRight, Copy, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, Globe, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react';
-import PersonalInfo from '../Component/PersonalInfo';
-import ResumePreview from '../Component/ResumePreview';
-import TemplateSelector from '../Component/TemplateSelector';
-import ColorPicker from '../Component/ColorPicker';
-import ProfessionalSummary from '../Component/ProfessionalSummary';
-import ExperienceForm from '../Component/ExperienceForm';
-import EducationForm from '../Component/EducationForm';
-import ProjectForm from '../Component/ProjectForm';
-import SkillsForm from '../Component/SkillsForm';
-import { useSelector } from 'react-redux';
-import api from '../configs/api';
-import toast from 'react-hot-toast';
-import { useRef } from 'react';
-import { useReactToPrint } from "react-to-print"
-import ResumeBuilderSkeleton from '../Component/skeleton/ResumeBuilderSkeleton';
-import QRCode from "react-qr-code"
-import { QrCode } from "lucide-react"
-import ATSModal from '../Component/ATSModal';
+import {
+  ArrowLeftIcon,
+  Briefcase,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  DownloadIcon,
+  EyeIcon,
+  EyeOffIcon,
+  FileText,
+  FolderIcon,
+  Globe,
+  GraduationCap,
+  QrCode,
+  Share2Icon,
+  Sparkles,
+  User,
+} from "lucide-react";
 
+import PersonalInfo from "../Component/PersonalInfo";
+import ResumePreview from "../Component/ResumePreview";
+import TemplateSelector from "../Component/TemplateSelector";
+import ColorPicker from "../Component/ColorPicker";
+import ProfessionalSummary from "../Component/ProfessionalSummary";
+import ExperienceForm from "../Component/ExperienceForm";
+import EducationForm from "../Component/EducationForm";
+import ProjectForm from "../Component/ProjectForm";
+import SkillsForm from "../Component/SkillsForm";
 
+import { useSelector } from "react-redux";
+import api from "../configs/api";
+import toast from "react-hot-toast";
+import { useReactToPrint } from "react-to-print";
 
-
+import ResumeBuilderSkeleton from "../Component/skeleton/ResumeBuilderSkeleton";
+import QRCode from "react-qr-code";
+import ATSModal from "../Component/ATSModal";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
-  const resumeRef = useRef(null)
-  const { token } = useSelector(state => state.auth)
-  const { loading: authLoading } = useSelector((state) => state.auth);
-  const isOnline = useSelector((state) => state.network.isOnline);
+
+  const resumeRef = useRef(null);
+  const shareRef = useRef(null);
+
+  const { token } = useSelector((state) => state.auth);
+
+  const { loading: authLoading } = useSelector(
+    (state) => state.auth
+  );
+
+  const isOnline = useSelector(
+    (state) => state.network.isOnline
+  );
+
+  // ---------------------------------------------
+  // STATES
+  // ---------------------------------------------
+
   const [pageLoading, setPageLoading] = useState(true);
-  const [showShareMenu, setShowShareMenu] = useState(false)
-  const shareRef = useRef(null)
-  const [showQR, setShowQR] = useState(false)
-  const [showATS, setShowATS] = useState(false)
+  const [openMenu, setOpenMenu] = useState(null);
 
+  const [showShareMenu, setShowShareMenu] =
+    useState(false);
 
-  const portfolioUrl = window.location.origin + "/portfolio/" + resumeId
+  const [showQR, setShowQR] = useState(false);
+
+  const [showATS, setShowATS] = useState(false);
+
+  const [activeSectionIndex, setActiveSectionIndex] =
+    useState(0);
+
+  const [removeBackground, setRemoveBackground] =
+    useState(false);
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [isDirty, setIsDirty] = useState(false);
+
+  const [lastSaved, setLastSaved] = useState(null);
 
   const [resumedata, setresumeData] = useState({
-    _id: '',
-    title: '',
+    _id: "",
+    title: "",
     personal_info: {
-      full_name: '',
-      profession: '',
-      email: '',
-      phone: '',
-      location: '',
-      linkedin: '',
-      website: '',
-      image: ''
+      full_name: "",
+      profession: "",
+      email: "",
+      phone: "",
+      location: "",
+      linkedin: "",
+      website: "",
+      image: "",
     },
     professionalInfo: {},
-    professionalSummary: '',
+    professional_summary: "",
     experience: [],
     education: [],
     projects: [],
     skills: [],
-    template: 'classic',
-    accent_color: '#3B82F6',
-    public: false
+    template: "classic",
+    accent_color: "#3B82F6",
+    public: false,
   });
 
+  const portfolioUrl =
+    window.location.origin +
+    "/portfolio/" +
+    resumeId;
+
+  // ---------------------------------------------
+  // LOAD RESUME
+  // ---------------------------------------------
 
   const loadExistingResume = async () => {
     try {
-      const { data } = await api.get("/api/resumes/get/" + resumeId, { headers: { Authorization: `Bearer ${token}` } })
+      const { data } = await api.get(
+        "/api/resumes/get/" + resumeId,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (data.resume) {
-        setresumeData(data.resume)
-        document.title = data.resume.title
+        setresumeData(data.resume);
+
+        document.title =
+          data.resume.title || "Resume Builder";
+
+        // Important:
+        // Don't autosave immediately after loading.
+        setIsDirty(false);
+
+        setLastSaved(new Date());
       }
-
     } catch (error) {
-      toast.error(error?.response?.data?.message || error.message)
-
+      toast.error(
+        error?.response?.data?.message ||
+          error.message
+      );
     } finally {
       setPageLoading(false);
     }
-
-
-
-  }
-
-  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
-  const [removeBackground, setRemoveBackground] = useState(false);
-
-  const section = [
-    { id: 'personal', title: 'Personal Info', icon: User },
-    { id: 'Summary', title: 'Summary', icon: FileText },
-    { id: 'Experience', title: 'Experience', icon: Briefcase },
-    { id: 'Education', title: 'Education', icon: GraduationCap },
-    { id: 'Projects', title: 'Projects', icon: FolderIcon },
-    { id: 'Skills', title: 'Skills', icon: Sparkles },
-  ]
-
-  const activeSection = section[activeSectionIndex]
+  };
 
   useEffect(() => {
+    if (!token || !resumeId) return;
 
-    loadExistingResume()
+    loadExistingResume();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [token, resumeId]);
+
+  // ---------------------------------------------
+  // AUTO SAVE
+  // ---------------------------------------------
+
+  useEffect(() => {
+    if (!isDirty) return;
+    if (!resumedata?._id) return;
+    if (!token) return;
+    if (!isOnline) return;
+
+    const timer = setTimeout(async () => {
+      await autoSaveResume();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumedata, isDirty]);
+
+  // ---------------------------------------------
+  // AUTO SAVE FUNCTION
+  // ---------------------------------------------
+
+  const autoSaveResume = async () => {
+    if (!resumedata?._id) return;
+
+    try {
+      setIsSaving(true);
+
+      let updatedResumeData =
+        structuredClone(resumedata);
+
+      // Don't send File object inside JSON
+      if (
+        updatedResumeData.personal_info &&
+        typeof updatedResumeData.personal_info.image ===
+          "object"
+      ) {
+        delete updatedResumeData.personal_info.image;
+      }
+
+      const formData = new FormData();
+
+      formData.append(
+        "resumeId",
+        resumeId
+      );
+
+      formData.append(
+        "resumeData",
+        JSON.stringify(updatedResumeData)
+      );
+
+      // Background removal
+      if (removeBackground) {
+        formData.append(
+          "removeBackground",
+          "yes"
+        );
+      }
+
+      // Upload image only when it is a new File
+      if (
+        resumedata.personal_info &&
+        typeof resumedata.personal_info.image ===
+          "object"
+      ) {
+        formData.append(
+          "image",
+          resumedata.personal_info.image
+        );
+      }
+
+      const { data } = await api.put(
+        "/api/resumes/update",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (data.resume) {
+        setresumeData(data.resume);
+      }
+
+      setIsDirty(false);
+      setLastSaved(new Date());
+    } catch (error) {
+      console.error(
+        "AUTO SAVE ERROR:",
+        error
+      );
+
+      toast.error(
+        error?.response?.data?.message ||
+          "Could not autosave resume"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ---------------------------------------------
+  // UPDATE RESUME DATA
+  // ---------------------------------------------
+
+  const updateResumeData = (updater) => {
+    setresumeData((prev) => {
+      const updated =
+        typeof updater === "function"
+          ? updater(prev)
+          : updater;
+
+      return updated;
+    });
+
+    setIsDirty(true);
+  };
+
+  // ---------------------------------------------
+  // CLOSE SHARE MENU
+  // ---------------------------------------------
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (shareRef.current && !shareRef.current.contains(event.target)) {
-        setShowShareMenu(false)
+      if (
+        shareRef.current &&
+        !shareRef.current.contains(
+          event.target
+        )
+      ) {
+        setShowShareMenu(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    return () =>
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+  }, []);
+
+  // ---------------------------------------------
+  // SECTIONS
+  // ---------------------------------------------
+
+  const sections = [
+    {
+      id: "personal",
+      title: "Personal Info",
+      icon: User,
+    },
+    {
+      id: "Summary",
+      title: "Summary",
+      icon: FileText,
+    },
+    {
+      id: "Experience",
+      title: "Experience",
+      icon: Briefcase,
+    },
+    {
+      id: "Education",
+      title: "Education",
+      icon: GraduationCap,
+    },
+    {
+      id: "Projects",
+      title: "Projects",
+      icon: FolderIcon,
+    },
+    {
+      id: "Skills",
+      title: "Skills",
+      icon: Sparkles,
+    },
+  ];
+
+  const activeSection =
+    sections[activeSectionIndex];
+
+  // ---------------------------------------------
+  // VISIBILITY
+  // ---------------------------------------------
 
   const changeResumeVisibility = async () => {
     try {
-      const formData = new FormData()
-      formData.append("resumeId", resumeId)
-      formData.append("resumeData", JSON.stringify({ public: !resumedata.public }))
+      const newVisibility =
+        !resumedata.public;
 
-      const { data } = await api.put("/api/resumes/update", formData, { headers: { Authorization: `Bearer ${token}` } })
-      setresumeData({ ...resumedata, public: !resumedata.public })
+      updateResumeData((prev) => ({
+        ...prev,
+        public: newVisibility,
+      }));
 
-      toast.success(data.message)
+      const formData = new FormData();
 
-    } catch (error) {
-      toast.error(error?.response?.data?.message || error.message)
+      formData.append(
+        "resumeId",
+        resumeId
+      );
 
-    }
-  }
+      formData.append(
+        "resumeData",
+        JSON.stringify({
+          public: newVisibility,
+        })
+      );
 
- 
+      const { data } = await api.put(
+        "/api/resumes/update",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  const saveResume = async () => {
-    try {
-
-      let updatedResumeData = structuredClone(resumedata)
-
-      // remove image from updatedresumedata
-
-      if (typeof resumedata.personal_info.image === "object") {
-        delete updatedResumeData.personal_info.image
+      if (data.resume) {
+        setresumeData(data.resume);
       }
 
-      const formData = new FormData()
-      formData.append("resumeId", resumeId)
-      formData.append("resumeData", JSON.stringify(updatedResumeData))
-      removeBackground && formData.append("removeBackground", "yes")
-      typeof resumedata.personal_info.image === 'object' && formData.append("image", resumedata.personal_info.image)
+      setIsDirty(false);
 
-      const { data } = await api.put("/api/resumes/update", formData, { headers: { Authorization: `Bearer ${token}` } })
-      setresumeData(data.resume)
-      toast.success(data.message)
-
+      toast.success(
+        newVisibility
+          ? "Resume is now public"
+          : "Resume is now private"
+      );
     } catch (error) {
-      toast.error(error?.response?.data?.message || error.message)
-
+      toast.error(
+        error?.response?.data?.message ||
+          error.message
+      );
     }
-  }
+  };
 
+  // ---------------------------------------------
+  // DOWNLOAD
+  // ---------------------------------------------
 
+  const downloadResume =
+    useReactToPrint({
+      contentRef: resumeRef,
+      documentTitle:
+        resumedata.title ||
+        "Resume",
+    });
 
-  const downloadResume = useReactToPrint({
-    contentRef: resumeRef,
-    documentTitle: "Resume",
-  })
+  // ---------------------------------------------
+  // SECTION REORDER
+  // ---------------------------------------------
 
-  const handleReorder = async (newOrder) => {
-    setresumeData((prev) => ({ ...prev, sectionOrder: newOrder }));
+  const handleReorder = async (
+    newOrder
+  ) => {
+    updateResumeData((prev) => ({
+      ...prev,
+      sectionOrder: newOrder,
+    }));
 
     try {
       await api.put(
         "/api/resumes/section-order",
-        { resumeId, sectionOrder: newOrder },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          resumeId,
+          sectionOrder: newOrder,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
     } catch (err) {
-      console.error(err);
+      console.error(
+        "Section reorder error:",
+        err
+      );
     }
   };
 
-if (authLoading || !isOnline || pageLoading) {
-  return <ResumeBuilderSkeleton />;
-}
+  // ---------------------------------------------
+  // NAVIGATION
+  // ---------------------------------------------
 
+  const previousSection = () => {
+    setActiveSectionIndex(
+      (prev) => Math.max(prev - 1, 0)
+    );
+  };
 
+  const nextSection = () => {
+    setActiveSectionIndex(
+      (prev) =>
+        Math.min(
+          prev + 1,
+          sections.length - 1
+        )
+    );
+  };
 
+  // ---------------------------------------------
+  // SHARE
+  // ---------------------------------------------
 
+  const copyResumeLink = () => {
+    const url =
+      window.location.origin +
+      "/view/" +
+      resumeId;
 
+    navigator.clipboard.writeText(url);
+
+    toast.success(
+      "Resume link copied"
+    );
+
+    setShowShareMenu(false);
+  };
+
+  const copyPortfolioLink = () => {
+    const url =
+      window.location.origin +
+      "/portfolio/" +
+      resumeId;
+
+    navigator.clipboard.writeText(url);
+
+    toast.success(
+      "Portfolio link copied"
+    );
+
+    setShowShareMenu(false);
+  };
+
+  // ---------------------------------------------
+  // LOADING
+  // ---------------------------------------------
+
+  if (
+    authLoading ||
+    !isOnline ||
+    pageLoading
+  ) {
+    return <ResumeBuilderSkeleton />;
+  }
+
+  // ---------------------------------------------
+  // AUTOSAVE STATUS
+  // ---------------------------------------------
+
+  const autosaveText = isSaving
+    ? "Saving..."
+    : "Autosaved";
+
+  // ---------------------------------------------
+  // UI
+  // ---------------------------------------------
 
   return (
-    <div>
-      <div className='max-w-7xl mx-auto px-4 py-6'>
-        <Link to='/app' className='inline-flex gap-2 items-center text-slate-500 hover:text-slate-500 transition-all'>
-          <ArrowLeftIcon className="size-4" />Back to Dashboard
-        </Link>
-      </div>
-
-      <div className='max-w-7xl mx-auto px-4 pb-8'>
-        <div className='grid lg:grid-cols-12 gap-8'>
-          {/* Left panel form */}
-
-          <div className='relative lg:col-span-5 rounded-lg overflow-hidden'>
-            <div className='bg-white rounded-lg shadow-sm border border-gray-200 pt-1 p-6'>
-              {/* progress bar using activesectionidex */}
-              <hr className='absolute top-0 left-0 right-0 border-2 border-gray-200' />
-              <hr className='absolute top-0 left-0 h-1 bg-linear-to-r from green-600 to-green-600 border-none transition-all duration-2000' style={{ width: `${activeSectionIndex * 100 / (section.length - 1)}%` }} />
-
-              {/* section navigation */}
-              <div className='flex justify-between items-center mb-6 border-b border-gray-300 py-1'>
-                <div className='flex  items-center gap-2'>
-                  <TemplateSelector selectedTemplate={resumedata.template} onChange={(template) => setresumeData(prev => ({ ...prev, template }))} />
-                  <ColorPicker selectedColor={resumedata.accent_color} onChange={(color) => setresumeData(prev => ({ ...prev, accent_color: color }))} />
-                </div>
-                <div className='flex items-center'>
-                  {activeSectionIndex !== 0 && (
-                    <button onClick={() => setActiveSectionIndex((prevIndex) => Math.max(prevIndex - 1, 0))} className='flex items-center cursor-pointer gap-1 p-3 rounded-lg text-sm font-medium text-gray-600  hover:bg-gray-50 transition-all' disabled={activeSectionIndex === 0}>
-                      <ChevronLeft className='size-4' /> Previous
-                    </button>
-                  )}
-
-                  <button onClick={() => setActiveSectionIndex((prevIndex) => Math.min(prevIndex + 1, section.length - 1))} className={`flex items-center cursor-pointer gap-1 p-3 rounded-lg text-sm font-medium text-gray-600  hover:bg-gray-50 transition-all ${activeSectionIndex == section.length - 1 && 'opacity-50'}`} disabled={activeSectionIndex === section.length}>
-                    Next<ChevronRight className='size-4 cursor-pointer' />
-                  </button>
-                </div>
-
-              </div>
-
-              {/* form sectioon */}
-              <div className='space-y-6'>
-                {activeSection.id === 'personal' && (
-                  <PersonalInfo data={resumedata.personal_info} onChange={(data) => setresumeData(prev => ({ ...prev, personal_info: data }))} removeBackground={removeBackground} setRemoveBackground={setRemoveBackground} />
-                )}
-                {activeSection.id === 'Summary' && (
-                  <ProfessionalSummary data={resumedata.professional_summary} onChange={(data) => setresumeData(prev => ({ ...prev, professional_summary: data }))} setResumeData={setresumeData} />
-                )}
-                {activeSection.id === 'Experience' && (
-                  <ExperienceForm data={resumedata.experience} onChange={(data) => setresumeData(prev => ({ ...prev, experience: data }))} />
-                )}
-                {activeSection.id === 'Education' && (
-                  <EducationForm data={resumedata.education} onChange={(data) => setresumeData(prev => ({ ...prev, education: data }))} />
-                )}
-                {activeSection.id === 'Projects' && (
-                  <ProjectForm data={resumedata.projects} onChange={(data) => setresumeData(prev => ({ ...prev, projects: data }))} />
-                )}
-                {activeSection.id === 'Skills' && (
-                  <SkillsForm data={resumedata.skills} onChange={(data) => setresumeData(prev => ({ ...prev, skills: data }))} />
-                )}
-
-              </div>
-              <button onClick={() => toast.promise(saveResume, { loading: "Saving..." })} className='bg-linear-to-br from-green-100 to-green-200  ring-green-300 text-green-600 cursor-pointer ring hover:ring-green-400 transition-all rounded-md px-6 py-2 mt-6 text-sm'>Save Changes</button >
-
-            </div>
-
-          </div>
-
-          {/* Right panel preview */}
-          <div className='lg:col-span-7 max-lg:mt-6'>
-            <div className='relative w-full'>
-              {/* button */}
-              <div className='absolute bottom-3 left-0 right-0 flex items-center justify-end gap-2'>
-                <button
-onClick={()=>setShowATS(true)}
-className="flex items-center p-2 px-4 gap-2 text-xs
-bg-linear-to-br from-orange-100 to-orange-200
-text-orange-700 rounded-lg ring-orange-300 hover:ring
-transition-colors"
->
-ATS Score: {resumedata.atsScore || 0}%
-</button>
-{showATS && (
-<ATSModal
-resume={resumedata}
-onClose={()=>setShowATS(false)}
-/>
-)}
-                {resumedata.public && (
-  <div className="relative z-40" ref={shareRef}>
-    
-    <button
-      onClick={() => setShowShareMenu((prev) => !prev)}
-      className="flex items-center p-2 px-4 gap-2 text-xs cursor-pointer
-      bg-linear-to-br from-blue-100 to-blue-200 
-      text-blue-600 rounded-lg ring-blue-300 
-      hover:ring transition-all duration-200"
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#FBFAF6",
+        color: "#171B24",
+      }}
     >
-      <Share2Icon className="size-4" />
-      Share
-    </button>
+      {/* ================================================= */}
+      {/* TOP HEADER */}
+      {/* ================================================= */}
 
-    {showShareMenu && (
-      <div
-        className="absolute right-0 mt-2 w-48 
-        bg-white border border-gray-200 
-        rounded-xl shadow-lg 
-        animate-[fadeIn_0.15s_ease-out]"
+      <header
+        style={{
+          minHeight: "68px",
+          borderBottom:
+            "1px solid #DFDACC",
+          background: "#FBFAF6",
+          display: "flex",
+          alignItems: "center",
+          justifyContent:
+            "space-between",
+          padding:
+            "12px clamp(16px, 4vw, 60px)",
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          gap: "15px",
+        }}
       >
-
-        <button
-          onClick={() => {
-            const url = window.location.origin + "/view/" + resumeId
-            navigator.clipboard.writeText(url)
-            toast.success("Resume link copied")
-            setShowShareMenu(false)
+        {/* LEFT */}
+        <Link
+          to="/app"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            color: "#5B6070",
+            textDecoration: "none",
+            fontFamily:
+              "'IBM Plex Mono', monospace",
+            fontSize: "9px",
+            textTransform: "uppercase",
+            letterSpacing: ".06em",
+            flexShrink: 0,
           }}
-          className="flex items-center gap-3 w-full px-4 py-3 cursor-pointer
-          text-sm text-gray-700 
-          hover:bg-gray-100 transition-colors"
         >
-          <FileText className="size-4 text-blue-500" />
-          Resume Link
-          <Copy className="size-3 ml-auto opacity-60" />
-        </button>
+          <ArrowLeftIcon size={14} />
+          Dashboard
+        </Link>
 
-        <button
-          onClick={() => {
-            const url = window.location.origin + "/portfolio/" + resumeId
-            navigator.clipboard.writeText(url)
-            toast.success("Portfolio link copied")
-            setShowShareMenu(false)
+        {/* CENTER */}
+        <div
+          style={{
+            textAlign: "center",
+            minWidth: 0,
           }}
-          className="flex items-center gap-3 w-full px-4 py-3 cursor-pointer
-          text-sm text-gray-700 
-          hover:bg-gray-100 transition-colors"
         >
-          <Globe className="size-4 text-green-500" />
-          Portfolio Link
-          <Copy className="size-3 ml-auto opacity-60" />
-        </button>
-
-      </div>
-    )}
-  </div>
-)}
-{resumedata.public && (
-  <button
-    onClick={() => setShowQR(true)}
-    className="flex items-center p-2 px-4 gap-2 text-xs cursor-pointer
-    bg-linear-to-br from-indigo-100 to-indigo-200 
-    text-indigo-600 rounded-lg ring-indigo-300 hover:ring transition-colors"
-  >
-    <QrCode className="size-4" />
-    QR Code
-  </button>
-)}
-                {resumedata.public && (
-                  <button
-                    onClick={() => window.open(`/portfolio/${resumeId}`, "_blank")}
-                    className="flex items-center cursor-pointer p-2 px-4 gap-2 text-xs bg-linear-to-br from-gray-300 to-gray-400 text-gray-800 rounded-lg ring-gray-500 hover:ring transition-colors"
-                  >
-                    <Globe className="size-4" />
-                    Portfolio
-                  </button>
-                )}
-
-
-                <button onClick={changeResumeVisibility} className='flex cursor-pointer items-center p-2 px-4 gap-2 text-xs bg-linear-to-br from-purple-100 to-purple-200 text-purple-600 rounded-lg ring-purple-300 hover:ring transition-colors'>
-                  {resumedata.public ? <EyeIcon className='size-4' /> : <EyeOffIcon className='size-4' />}
-                  {resumedata.public ? "public" : "private"}
-                </button>
-
-                <button onClick={downloadResume} className='flex cursor-pointer item-center gap-2 px-6 py-2 text-xs bg-linear-to-br from-green-100 to-green-200 text-green-600 rounded-lg ring-green-300 hover:ring transition-colors'>
-                  <DownloadIcon className='size-4' /> Download
-                </button>
-              </div>
-
-
-            </div>
-
-            {/* resume preview */}
-            <div style={{ position: "relative" }}>
-
-
-
-              <div ref={resumeRef}>
-
-                <ResumePreview data={resumedata} accentColor={resumedata.accent_color} template={resumedata.template} onReorder={handleReorder} />
-              </div>
-
-            </div>
-
+          <div
+            style={{
+              fontFamily:
+                "'IBM Plex Mono', monospace",
+              fontSize: "8px",
+              color: "#C63B26",
+              textTransform: "uppercase",
+              letterSpacing: ".12em",
+            }}
+          >
+            Resume editor
           </div>
 
+          <div
+            style={{
+              fontFamily:
+                "'Newsreader', serif",
+              fontSize: "18px",
+              fontWeight: 500,
+              color: "#171B24",
+              marginTop: "2px",
+              maxWidth: "260px",
+              overflow: "hidden",
+              textOverflow:
+                "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {resumedata.title ||
+              "Untitled Resume"}
+          </div>
         </div>
 
-      </div>
-      {showQR && (
-  <div
-    className="fixed inset-0 flex items-center justify-center 
-    bg-black/40 backdrop-blur-sm 
-    z-50 animate-[modalFade_0.2s_ease-out]"
-  >
+        {/* RIGHT AUTOSAVE */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "7px",
+            fontFamily:
+              "'IBM Plex Mono', monospace",
+            fontSize: "8px",
+            color: isSaving
+              ? "#A16D13"
+              : "#4E8A62",
+            textTransform:
+              "uppercase",
+            letterSpacing: ".05em",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background:
+                isSaving
+                  ? "#C89428"
+                  : "#4E8A62",
+              display: "inline-block",
+            }}
+          />
 
-    <div
-      className="relative bg-white rounded-2xl 
-      p-7 shadow-2xl text-center w-80 
-      animate-[modalScale_0.25s_ease-out]"
-    >
+          {autosaveText}
+        </div>
+      </header>
 
-      {/* Close button */}
-      <button
-        onClick={() => setShowQR(false)}
-        className="absolute top-3 right-3 p-1 rounded-full 
-        text-gray-400 hover:text-gray-700 
-        hover:bg-gray-100 transition cursor-pointer"
+      {/* ================================================= */}
+      {/* TOP ACTION BAR */}
+      {/* ================================================= */}
+
+      <div
+        style={{
+          position: "sticky",
+          top: "68px",
+          zIndex: 40,
+          background:
+            "rgba(251,250,246,.96)",
+          backdropFilter:
+            "blur(10px)",
+          borderBottom:
+            "1px solid #DFDACC",
+          padding:
+            "10px clamp(16px, 4vw, 60px)",
+        }}
       >
-        ✕
-      </button>
+        <div
+          style={{
+            maxWidth: "1500px",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent:
+              "space-between",
+            gap: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          {/* LEFT ACTIONS */}
 
-      {/* Title */}
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">
-        Scan Portfolio QR
-      </h2>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "7px",
+              flexWrap: "wrap",
+            }}
+          >
+            <TemplateSelector
+  openMenu={openMenu}
+  setOpenMenu={setOpenMenu}
+  selectedTemplate={resumedata.template}
+  onChange={(template) =>
+    updateResumeData((prev) => ({
+      ...prev,
+      template,
+    }))
+  }
+/>
 
-      {/* QR container */}
-      <div className="flex justify-center p-4 
-        bg-gray-50 rounded-xl shadow-inner">
+<ColorPicker
+  openMenu={openMenu}
+  setOpenMenu={setOpenMenu}
+  selectedColor={resumedata.accent_color}
+  onChange={(color) =>
+    updateResumeData((prev) => ({
+      ...prev,
+      accent_color: color,
+    }))
+  }
+/>
+          </div>
 
-        <QRCode
-          value={portfolioUrl}
-          size={180}
-        />
+          {/* RIGHT ACTIONS */}
 
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "7px",
+              flexWrap: "wrap",
+            }}
+          >
+            {/* ATS */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowATS(true)
+              }
+              style={{
+                height: "36px",
+                padding: "0 12px",
+                border:
+                  "1px solid #DFDACC",
+                background:
+                  "#FFFFFF",
+                color: "#5B6070",
+                display: "flex",
+                alignItems:
+                  "center",
+                gap: "5px",
+                fontFamily:
+                  "'IBM Plex Mono', monospace",
+                fontSize: "8px",
+                textTransform:
+                  "uppercase",
+                cursor: "pointer",
+              }}
+            >
+              ATS
+
+              <span
+                style={{
+                  color: "#C63B26",
+                  fontWeight: 600,
+                }}
+              >
+                {resumedata.atsScore ||
+                  0}
+                %
+              </span>
+            </button>
+
+            {/* ATS MODAL */}
+
+            {showATS && (
+              <ATSModal
+                resume={resumedata}
+                onClose={() =>
+                  setShowATS(false)
+                }
+              />
+            )}
+
+            {/* SHARE */}
+
+            {resumedata.public && (
+              <div
+                ref={shareRef}
+                style={{
+                  position: "relative",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowShareMenu(
+                      (prev) => !prev
+                    )
+                  }
+                  style={{
+                    height: "36px",
+                    padding:
+                      "0 12px",
+                    border:
+                      "1px solid #DFDACC",
+                    background:
+                      "#FFFFFF",
+                    color:
+                      "#5B6070",
+                    display: "flex",
+                    alignItems:
+                      "center",
+                    gap: "6px",
+                    fontFamily:
+                      "'IBM Plex Mono', monospace",
+                    fontSize: "8px",
+                    textTransform:
+                      "uppercase",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  <Share2Icon
+                    size={13}
+                  />
+                  Share
+                </button>
+
+                {showShareMenu && (
+                  <div
+                    style={{
+                      position:
+                        "absolute",
+                      right: 0,
+                      top:
+                        "calc(100% + 8px)",
+                      width: "210px",
+                      background:
+                        "#FFFFFF",
+                      border:
+                        "1px solid #DFDACC",
+                      boxShadow:
+                        "0 10px 30px rgba(0,0,0,.08)",
+                      zIndex: 100,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={
+                        copyResumeLink
+                      }
+                      style={{
+                        width: "100%",
+                        padding: "12px",
+                        border:
+                          "none",
+                        borderBottom:
+                          "1px solid #DFDACC",
+                        background:
+                          "#FFFFFF",
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        gap: "9px",
+                        color:
+                          "#5B6070",
+                        fontSize:
+                          "11px",
+                        textAlign:
+                          "left",
+                        cursor:
+                          "pointer",
+                      }}
+                    >
+                      <FileText
+                        size={13}
+                      />
+
+                      Resume Link
+
+                      <Copy
+                        size={11}
+                        style={{
+                          marginLeft:
+                            "auto",
+                        }}
+                      />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        copyPortfolioLink
+                      }
+                      style={{
+                        width: "100%",
+                        padding: "12px",
+                        border:
+                          "none",
+                        background:
+                          "#FFFFFF",
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        gap: "9px",
+                        color:
+                          "#5B6070",
+                        fontSize:
+                          "11px",
+                        textAlign:
+                          "left",
+                        cursor:
+                          "pointer",
+                      }}
+                    >
+                      <Globe
+                        size={13}
+                      />
+
+                      Portfolio Link
+
+                      <Copy
+                        size={11}
+                        style={{
+                          marginLeft:
+                            "auto",
+                        }}
+                      />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* QR */}
+
+            {resumedata.public && (
+              <button
+                type="button"
+                onClick={() =>
+                  setShowQR(true)
+                }
+                style={{
+                  height: "36px",
+                  padding: "0 12px",
+                  border:
+                    "1px solid #DFDACC",
+                  background:
+                    "#FFFFFF",
+                  color: "#5B6070",
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  gap: "6px",
+                  fontFamily:
+                    "'IBM Plex Mono', monospace",
+                  fontSize: "8px",
+                  textTransform:
+                    "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                <QrCode size={13} />
+                QR
+              </button>
+            )}
+
+            {/* PORTFOLIO */}
+
+            {resumedata.public && (
+              <button
+                type="button"
+                onClick={() =>
+                  window.open(
+                    `/portfolio/${resumeId}`,
+                    "_blank"
+                  )
+                }
+                style={{
+                  height: "36px",
+                  padding: "0 12px",
+                  border:
+                    "1px solid #DFDACC",
+                  background:
+                    "#FFFFFF",
+                  color: "#5B6070",
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  gap: "6px",
+                  fontFamily:
+                    "'IBM Plex Mono', monospace",
+                  fontSize: "8px",
+                  textTransform:
+                    "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                <Globe size={13} />
+                Portfolio
+              </button>
+            )}
+
+            {/* VISIBILITY */}
+
+            <button
+              type="button"
+              onClick={
+                changeResumeVisibility
+              }
+              style={{
+                height: "36px",
+                padding: "0 12px",
+                border:
+                  "1px solid #DFDACC",
+                background:
+                  resumedata.public
+                    ? "#F2F7F3"
+                    : "#FFFFFF",
+                color:
+                  resumedata.public
+                    ? "#2D7A50"
+                    : "#5B6070",
+                display: "flex",
+                alignItems:
+                  "center",
+                gap: "6px",
+                fontFamily:
+                  "'IBM Plex Mono', monospace",
+                fontSize: "8px",
+                textTransform:
+                  "uppercase",
+                cursor: "pointer",
+              }}
+            >
+              {resumedata.public ? (
+                <EyeIcon size={13} />
+              ) : (
+                <EyeOffIcon size={13} />
+              )}
+
+              {resumedata.public
+                ? "Public"
+                : "Private"}
+            </button>
+
+            {/* DOWNLOAD */}
+
+            <button
+              type="button"
+              onClick={
+                downloadResume
+              }
+              style={{
+                height: "36px",
+                padding:
+                  "0 15px",
+                border:
+                  "1px solid #171B24",
+                background:
+                  "#171B24",
+                color: "#FFFFFF",
+                display: "flex",
+                alignItems:
+                  "center",
+                gap: "6px",
+                fontFamily:
+                  "'IBM Plex Mono', monospace",
+                fontSize: "8px",
+                textTransform:
+                  "uppercase",
+                letterSpacing:
+                  ".05em",
+                cursor: "pointer",
+              }}
+            >
+              <DownloadIcon
+                size={13}
+              />
+
+              Download
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Info text */}
-      <p className="text-xs text-gray-500 mt-4">
-        Scan this QR code to open your portfolio on your phone
-      </p>
+      {/* ================================================= */}
+      {/* MAIN */}
+      {/* ================================================= */}
 
-      {/* Portfolio link preview */}
-      <p className="text-xs text-gray-400 mt-2 truncate">
-        {portfolioUrl}
-      </p>
+      <main
+        style={{
+          maxWidth: "1500px",
+          margin: "0 auto",
+          padding:
+            "28px clamp(16px, 3vw, 40px) 60px",
+        }}
+      >
+        <div
+          className="resume-builder-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "minmax(390px, 500px) minmax(500px, 1fr)",
+            gap: "28px",
+            alignItems: "start",
+          }}
+        >
+          {/* ================================================= */}
+          {/* LEFT EDITOR */}
+          {/* ================================================= */}
 
+          <section
+            style={{
+              border:
+                "1px solid #DFDACC",
+              background:
+                "#FFFFFF",
+              position: "relative",
+            }}
+          >
+            {/* EDITOR HEADER */}
+
+            <div
+              style={{
+                padding:
+                  "17px 20px",
+                borderBottom:
+                  "1px solid #DFDACC",
+                background:
+                  "#F7F6F1",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontFamily:
+                      "'IBM Plex Mono', monospace",
+                    fontSize: "8px",
+                    color: "#C63B26",
+                    textTransform:
+                      "uppercase",
+                    letterSpacing:
+                      ".1em",
+                  }}
+                >
+                  Editing
+                </div>
+
+                <div
+                  style={{
+                    fontFamily:
+                      "'Newsreader', serif",
+                    fontSize: "22px",
+                    marginTop: "3px",
+                  }}
+                >
+                  Build your resume
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION NAV */}
+
+            <div
+              style={{
+                padding:
+                  "12px 20px",
+                borderBottom:
+                  "1px solid #DFDACC",
+                display: "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "space-between",
+                gap: "10px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  gap: "8px",
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    width: "29px",
+                    height: "29px",
+                    border:
+                      "1px solid #DFDACC",
+                    display: "flex",
+                    alignItems:
+                      "center",
+                    justifyContent:
+                      "center",
+                    color: "#C63B26",
+                    flexShrink: 0,
+                  }}
+                >
+                  {React.createElement(
+                    activeSection.icon,
+                    {
+                      size: 14,
+                      strokeWidth: 1.5,
+                    }
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily:
+                        "'IBM Plex Mono', monospace",
+                      fontSize: "7px",
+                      color: "#8A8F9B",
+                      textTransform:
+                        "uppercase",
+                      letterSpacing:
+                        ".08em",
+                    }}
+                  >
+                    Section{" "}
+                    {String(
+                      activeSectionIndex +
+                        1
+                    ).padStart(2, "0")}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#171B24",
+                    }}
+                  >
+                    {activeSection.title}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  gap: "3px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={
+                    previousSection
+                  }
+                  disabled={
+                    activeSectionIndex ===
+                    0
+                  }
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    border:
+                      "1px solid #DFDACC",
+                    background:
+                      "transparent",
+                    display: "flex",
+                    alignItems:
+                      "center",
+                    justifyContent:
+                      "center",
+                    color:
+                      activeSectionIndex ===
+                      0
+                        ? "#C9C7BF"
+                        : "#5B6070",
+                    cursor:
+                      activeSectionIndex ===
+                      0
+                        ? "default"
+                        : "pointer",
+                  }}
+                >
+                  <ChevronLeft
+                    size={14}
+                  />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    nextSection
+                  }
+                  disabled={
+                    activeSectionIndex ===
+                    sections.length - 1
+                  }
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    border:
+                      "1px solid #DFDACC",
+                    background:
+                      "transparent",
+                    display: "flex",
+                    alignItems:
+                      "center",
+                    justifyContent:
+                      "center",
+                    color:
+                      activeSectionIndex ===
+                      sections.length - 1
+                        ? "#C9C7BF"
+                        : "#5B6070",
+                    cursor:
+                      activeSectionIndex ===
+                      sections.length - 1
+                        ? "default"
+                        : "pointer",
+                  }}
+                >
+                  <ChevronRight
+                    size={14}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* PROGRESS */}
+
+            <div
+              style={{
+                height: "2px",
+                background:
+                  "#E7E4DB",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${
+                    (activeSectionIndex *
+                      100) /
+                    (sections.length - 1)
+                  }%`,
+                  background:
+                    "#C63B26",
+                  transition:
+                    "width .3s ease",
+                }}
+              />
+            </div>
+
+            {/* FORM */}
+
+            <div
+              style={{
+                padding: "25px",
+              }}
+            >
+              {/* PERSONAL */}
+
+              {activeSection.id ===
+                "personal" && (
+                <PersonalInfo
+                  data={
+                    resumedata.personal_info
+                  }
+                  onChange={(data) =>
+                    updateResumeData(
+                      (prev) => ({
+                        ...prev,
+                        personal_info:
+                          data,
+                      })
+                    )
+                  }
+                  removeBackground={
+                    removeBackground
+                  }
+                  setRemoveBackground={
+                    setRemoveBackground
+                  }
+                />
+              )}
+
+              {/* SUMMARY */}
+
+              {activeSection.id ===
+                "Summary" && (
+                <ProfessionalSummary
+                  data={
+                    resumedata.professional_summary
+                  }
+                  onChange={(data) =>
+                    updateResumeData(
+                      (prev) => ({
+                        ...prev,
+                        professional_summary:
+                          data,
+                      })
+                    )
+                  }
+                  setResumeData={
+                    (updater) => {
+                      updateResumeData(
+                        updater
+                      );
+                    }
+                  }
+                />
+              )}
+
+              {/* EXPERIENCE */}
+
+              {activeSection.id ===
+                "Experience" && (
+                <ExperienceForm
+                  data={
+                    resumedata.experience ||
+                    []
+                  }
+                  onChange={(data) =>
+                    updateResumeData(
+                      (prev) => ({
+                        ...prev,
+                        experience:
+                          data,
+                      })
+                    )
+                  }
+                />
+              )}
+
+              {/* EDUCATION */}
+
+              {activeSection.id ===
+                "Education" && (
+                <EducationForm
+                  data={
+                    resumedata.education ||
+                    []
+                  }
+                  onChange={(data) =>
+                    updateResumeData(
+                      (prev) => ({
+                        ...prev,
+                        education:
+                          data,
+                      })
+                    )
+                  }
+                />
+              )}
+
+              {/* PROJECTS */}
+
+              {activeSection.id ===
+                "Projects" && (
+                <ProjectForm
+                  data={
+                    resumedata.projects ||
+                    []
+                  }
+                  onChange={(data) =>
+                    updateResumeData(
+                      (prev) => ({
+                        ...prev,
+                        projects:
+                          data,
+                      })
+                    )
+                  }
+                />
+              )}
+
+              {/* SKILLS */}
+
+              {activeSection.id ===
+                "Skills" && (
+                <SkillsForm
+                  data={
+                    resumedata.skills ||
+                    []
+                  }
+                  onChange={(data) =>
+                    updateResumeData(
+                      (prev) => ({
+                        ...prev,
+                        skills:
+                          data,
+                      })
+                    )
+                  }
+                />
+              )}
+
+              {/* NO MANUAL SAVE BUTTON */}
+            </div>
+          </section>
+
+          {/* ================================================= */}
+          {/* RIGHT DOCUMENT */}
+          {/* ================================================= */}
+
+          <section
+            style={{
+              minWidth: 0,
+            }}
+          >
+            {/* PREVIEW HEADER */}
+
+            <div
+              style={{
+                border:
+                  "1px solid #DFDACC",
+                borderBottom:
+                  "none",
+                background:
+                  "#F7F6F1",
+                padding:
+                  "13px 17px",
+                display: "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "space-between",
+                gap: "10px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  gap: "8px",
+                }}
+              >
+                <FileText
+                  size={14}
+                  strokeWidth={1.5}
+                  color="#C63B26"
+                />
+
+                <span
+                  style={{
+                    fontFamily:
+                      "'IBM Plex Mono', monospace",
+                    fontSize: "8px",
+                    color: "#5B6070",
+                    textTransform:
+                      "uppercase",
+                    letterSpacing:
+                      ".07em",
+                  }}
+                >
+                  Live preview
+                </span>
+              </div>
+
+              <span
+                style={{
+                  fontFamily:
+                    "'IBM Plex Mono', monospace",
+                  fontSize: "8px",
+                  color: "#8A8F9B",
+                }}
+              >
+                A4 / DOCUMENT
+              </span>
+            </div>
+
+            {/* DOCUMENT */}
+
+            <div
+              style={{
+                background:
+                  "#E9E6DE",
+                border:
+                  "1px solid #DFDACC",
+                padding:
+                  "clamp(12px, 2vw, 28px)",
+                minHeight:
+                  "700px",
+              }}
+            >
+              <div
+                ref={resumeRef}
+                style={{
+                  width: "100%",
+                }}
+              >
+                <ResumePreview
+                  data={resumedata}
+                  accentColor={
+                    resumedata.accent_color
+                  }
+                  template={
+                    resumedata.template
+                  }
+                  onReorder={
+                    handleReorder
+                  }
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {/* ================================================= */}
+      {/* QR MODAL */}
+      {/* ================================================= */}
+
+      {showQR && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background:
+              "rgba(23,27,36,.45)",
+            backdropFilter:
+              "blur(4px)",
+            zIndex: 100,
+            display: "flex",
+            alignItems:
+              "center",
+            justifyContent:
+              "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "380px",
+              background:
+                "#FBFAF6",
+              border:
+                "1px solid #DFDACC",
+            }}
+          >
+            <div
+              style={{
+                padding:
+                  "15px 18px",
+                borderBottom:
+                  "1px solid #DFDACC",
+                display: "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "space-between",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontFamily:
+                      "'IBM Plex Mono', monospace",
+                    fontSize: "8px",
+                    color: "#C63B26",
+                    textTransform:
+                      "uppercase",
+                    letterSpacing:
+                      ".08em",
+                  }}
+                >
+                  Public portfolio
+                </div>
+
+                <div
+                  style={{
+                    fontFamily:
+                      "'Newsreader', serif",
+                    fontSize: "20px",
+                    marginTop: "3px",
+                  }}
+                >
+                  Scan to open
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowQR(false)
+                }
+                style={{
+                  border:
+                    "1px solid #DFDACC",
+                  background:
+                    "transparent",
+                  width: "28px",
+                  height: "28px",
+                  cursor:
+                    "pointer",
+                  color:
+                    "#5B6070",
+                  fontSize: "18px",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              style={{
+                padding: "28px",
+                textAlign:
+                  "center",
+              }}
+            >
+              <div
+                style={{
+                  background:
+                    "#FFFFFF",
+                  border:
+                    "1px solid #DFDACC",
+                  padding: "20px",
+                  display:
+                    "inline-flex",
+                }}
+              >
+                <QRCode
+                  value={
+                    portfolioUrl
+                  }
+                  size={180}
+                />
+              </div>
+
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#5B6070",
+                  lineHeight: 1.6,
+                  marginTop:
+                    "18px",
+                }}
+              >
+                Scan this QR code
+                to open your
+                public portfolio.
+              </p>
+
+              <p
+                style={{
+                  fontFamily:
+                    "'IBM Plex Mono', monospace",
+                  fontSize: "8px",
+                  color: "#8A8F9B",
+                  marginTop:
+                    "8px",
+                  wordBreak:
+                    "break-all",
+                }}
+              >
+                {portfolioUrl}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================= */}
+      {/* RESPONSIVE */}
+      {/* ================================================= */}
+
+      <style>{`
+        @media (max-width: 1050px) {
+          .resume-builder-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        @media (max-width: 700px) {
+          .resume-builder-grid {
+            display: block !important;
+          }
+
+          .resume-builder-grid > section:first-child {
+            margin-bottom: 25px;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .resume-builder-grid > section:first-child {
+            margin-bottom: 20px;
+          }
+        }
+
+        @media print {
+          body {
+            background: white !important;
+          }
+
+          header,
+          .resume-builder-grid > section:first-child {
+            display: none !important;
+          }
+
+          main {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          .resume-builder-grid {
+            display: block !important;
+          }
+
+          .resume-builder-grid > section:last-child {
+            width: 100% !important;
+          }
+        }
+      `}</style>
     </div>
+  );
+};
 
-  </div>
-)}
-
-    </div>
-    
-  )
-}
-
-export default ResumeBuilder
+export default ResumeBuilder;

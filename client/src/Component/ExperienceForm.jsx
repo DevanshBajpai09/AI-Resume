@@ -1,179 +1,912 @@
-import { Briefcase, Plus, Sparkles, Trash, Trash2, Loader2 } from 'lucide-react'
-import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
-import api from '../configs/api'
-import toast from 'react-hot-toast'
+import {
+  Briefcase,
+  Plus,
+  Sparkles,
+  Trash2,
+  Loader2,
+} from "lucide-react";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import api from "../configs/api";
+import toast from "react-hot-toast";
 
 const ExperienceForm = ({ data, onChange }) => {
-    const {token}  = useSelector(state=>state.auth)
+  const { token } = useSelector(
+    (state) => state.auth
+  );
 
-    const [generatingIndex, setgeneratingIndex] = useState(false);
+  const [generatingIndex, setGeneratingIndex] =
+    useState(-1);
 
-    
+  const AddExperience = () => {
+    const newExperience = {
+      company: "",
+      position: "",
+      start_date: "",
+      end_date: "",
+      description: "",
+      is_current: false,
+    };
 
-    const AddExperience = () => {
-        const newExperience = {
-            company: "",
-            position: "",
-            start_date: "",
-            end_date: "",
-            description: "",
-            is_current: false
+    onChange([...data, newExperience]);
+  };
 
+  const removeExperience = (index) => {
+    const updated = data.filter(
+      (_, i) => i !== index
+    );
 
-        }
-        onChange([...data, newExperience])
+    onChange(updated);
+  };
+
+  const updateExperience = (
+    index,
+    field,
+    value
+  ) => {
+    const updated = [...data];
+
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+
+    onChange(updated);
+  };
+
+  const generatingDescription = async (index) => {
+    setGeneratingIndex(index);
+
+    const experience = data[index];
+
+    const prompt = `enhance this job description ${experience.description} for the position of ${experience.position} at ${experience.company}.`;
+
+    try {
+      const { data: responseData } =
+        await api.post(
+          "/api/ai/enhance-job-desc",
+          {
+            userContent: prompt,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+      updateExperience(
+        index,
+        "description",
+        responseData.enhanceContent
+      );
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error.message
+      );
+    } finally {
+      setGeneratingIndex(-1);
     }
+  };
 
+  return (
+    <div
+      style={{
+        background: "#FBFAF6",
+        color: "#171B24",
+        minHeight: "100%",
+      }}
+    >
+      {/* ===================================== */}
+      {/* HEADER */}
+      {/* ===================================== */}
 
-    const removeExperience = (index) => {
-        const updated = data.filter((_, i) => i !== index)
-        onChange(updated)
-
-    }
-
-
-    const updateExperience = (index, field, value) => {
-        const updated = [...data]
-        updated[index] = { ...updated[index], [field]: value }
-        onChange(updated)
-
-    }
-
-
-    const generatingDescription = async(index)=>{
-        setgeneratingIndex(index)
-        const experience = data[index]
-        const prompt = `enhance this job description ${experience.description} for the position of ${experience.position} at ${experience.company}.`
-        try{
-            const {data} = await api.post("/api/ai/enhance-job-desc",{userContent:prompt},{headers:{Authorization: `Bearer ${token}`}})
-            updateExperience(index, "description",data.enhanceContent)
-
-
-
-
-        }catch(error){
-            toast.error(error?.response?.data?.message || error.message)
-
-        }finally{
-            setgeneratingIndex(-1)
-        }
-    }
-    return (
-        <div className='space-y-6'>
-            <div className='flex items-center justify-between'>
-                <div>
-                    <h3 className='flex items-center gap-2 text-lg font-semibold text-gray-900'>Professional Experience</h3>
-                    <p className='text-sm text-gray-500'>Add your job experience</p>
-                </div>
-                <button onClick={AddExperience} className='flex cursor-pointer items-center gap-2 px-3 py-1 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors'>
-                    <Plus size={14} /> Add Experience
-                </button>
-            </div>
-
-            {data.length === 0 ? (
-                <div className='text-gray-500 text-center py-8'>
-                    <Briefcase className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>No work Experience added here</p>
-                    <p className='text-sm'>Click "Add Experience" to get started.</p>
-                </div>
-            ) : (
-                <div className='space-y-4'>
-                    {data.map((experience, index) => (
-                        <div key={index} className='p-4 border border-gray-200 rounded-lg space-y-3'>
-                            <div className='flex justify-between items-start'>
-                                <h4>Experience #{index + 1}</h4>
-                                <button onClick={() => removeExperience(index)} className='text-red-500 cursor-pointer hover:text-red-700 transition-colors'>
-                                    <Trash2 className='size-4' />
-                                </button>
-
-                            </div>
-                            <div className='grid md:grid-cols-2 gap-3'>
-                                <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">
-            Company Name
-        </label>
-        <input
-            value={experience.company || ""}
-            onChange={(e) => updateExperience(index, "company", e.target.value)}
-            type="text"
-            placeholder="Company Name"
-            className="px-3 py-2 border border-gray-400 text-sm rounded-lg focus:ring focus:ring-blue-500 outline-none"
-        />
-    </div>
-
-    {/* Job Title */}
-    <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">
-            Job Title
-        </label>
-        <input
-            value={experience.position || ""}
-            onChange={(e) => updateExperience(index, "position", e.target.value)}
-            type="text"
-            placeholder="Job title"
-            className="px-3 py-2 text-sm border border-gray-400 rounded-lg focus:ring focus:ring-blue-500 outline-none"
-        />
-    </div>
-
-    {/* Start Date */}
-    <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">
-            Start Date
-        </label>
-        <input
-            value={experience.start_date || ""}
-            onChange={(e) => updateExperience(index, "start_date", e.target.value)}
-            type="month"
-            className="px-3 py-2 text-sm border border-gray-400 rounded-lg focus:ring focus:ring-blue-500 outline-none"
-        />
-    </div>
-
-    {/* End Date */}
-    <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">
-            End Date
-        </label>
-        <input
-            value={experience.end_date || ""}
-            onChange={(e) => updateExperience(index, "end_date", e.target.value)}
-            type="month"
-            disabled={experience.is_current}
-            className="px-3 py-2 border border-gray-400 text-sm rounded-lg disabled:bg-gray-100 focus:ring focus:ring-blue-500 outline-none"
-        />
-    </div>
-
-
-
-
-
-
-                            </div>
-                            <label htmlFor="" className='flex items-center gap-2'>
-
-                            <input type="checkbox" checked={experience.is_current || false} onChange={(e)=>{updateExperience(index,  "is_current" , e.target.checked ? true : false)}} className='rounded border-gray-300 border text-blue-600 focus:ring-blue-500'/>
-                            <span className='text-sm text-gray-700'>Current working here</span>
-                            </label>
-
-                            <div className='space-y-2'>
-                                <div className='flex items-center justify-between'>
-                                    <label htmlFor="" className='text-sm font-medium text-gray-700'>Job Description</label>
-                                    <button onClick={()=>generatingDescription(index)} disabled={generatingIndex === index || !experience.position || !experience.company} className='flex cursor-pointer items-center gap-1 px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50'>
-                                        {generatingIndex === index ? (<Loader2 className="w-3 h-3 animate-spin"/>) : (<Sparkles className='w-3 h-3'/>)}
-                                        Enhance with AI
-                                    </button>
-                                </div>
-                                <textarea value={experience.description || ""} onChange={(e)=> updateExperience(index, "description", e.target.value)}  name="" placeholder='Describe your key responsibilities and achievements....' className='w-full text-sm px-3 py-2  rounded-lg focus:ring border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none min-h-45' id=""></textarea>
-
-                            </div>
-
-                        </div>
-                    ))}
-
-                </div>
-            )}
+      <div
+        style={{
+          paddingBottom: "20px",
+          borderBottom:
+            "1px solid #DFDACC",
+        }}
+      >
+        <div
+          style={{
+            fontFamily:
+              "'IBM Plex Mono', monospace",
+            fontSize: "9px",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+            color: "#C63B26",
+            marginBottom: "5px",
+          }}
+        >
+          § 03 / Experience
         </div>
-    )
-}
 
-export default ExperienceForm
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "15px",
+          }}
+        >
+          <div>
+            <h3
+              style={{
+                margin: 0,
+                fontFamily:
+                  "'Newsreader', serif",
+                fontSize: "27px",
+                fontWeight: 500,
+                color: "#171B24",
+              }}
+            >
+              Professional Experience
+            </h3>
+
+            <p
+              style={{
+                margin: "5px 0 0",
+                fontSize: "12px",
+                color: "#5B6070",
+                lineHeight: 1.5,
+              }}
+            >
+              Show where you've worked,
+              what you did, and the impact
+              you made.
+            </p>
+          </div>
+
+          {/* ADD EXPERIENCE */}
+
+          <button
+            type="button"
+            onClick={AddExperience}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              flexShrink: 0,
+              padding: "8px 11px",
+              border: "1px solid #CFCBBC",
+              background: "#FFFFFF",
+              color: "#C63B26",
+              fontFamily:
+                "'IBM Plex Mono', monospace",
+              fontSize: "8px",
+              textTransform: "uppercase",
+              letterSpacing: ".04em",
+              cursor: "pointer",
+              transition: "all .2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background =
+                "#F4EDE7";
+              e.currentTarget.style.borderColor =
+                "#C63B26";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background =
+                "#FFFFFF";
+              e.currentTarget.style.borderColor =
+                "#CFCBBC";
+            }}
+          >
+            <Plus size={13} />
+            Add Experience
+          </button>
+        </div>
+      </div>
+
+      {/* ===================================== */}
+      {/* EMPTY STATE */}
+      {/* ===================================== */}
+
+      {data.length === 0 ? (
+        <div
+          style={{
+            padding: "55px 20px",
+            textAlign: "center",
+            borderBottom:
+              "1px solid #DFDACC",
+          }}
+        >
+          <Briefcase
+            size={35}
+            strokeWidth={1}
+            color="#A7A49A"
+            style={{
+              margin: "0 auto 12px",
+            }}
+          />
+
+          <p
+            style={{
+              margin: 0,
+              fontFamily:
+                "'Newsreader', serif",
+              fontSize: "20px",
+              color: "#171B24",
+            }}
+          >
+            No experience yet
+          </p>
+
+          <p
+            style={{
+              margin:
+                "5px 0 16px",
+              fontSize: "11px",
+              color: "#7A7E89",
+            }}
+          >
+            Add your first professional
+            experience to get started.
+          </p>
+
+          <button
+            type="button"
+            onClick={AddExperience}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding:
+                "8px 12px",
+              border:
+                "1px solid #CFCBBC",
+              background:
+                "#FFFFFF",
+              color:
+                "#C63B26",
+              fontFamily:
+                "'IBM Plex Mono', monospace",
+              fontSize: "8px",
+              textTransform:
+                "uppercase",
+              letterSpacing:
+                ".04em",
+              cursor:
+                "pointer",
+            }}
+          >
+            <Plus size={12} />
+            Add Experience
+          </button>
+        </div>
+      ) : (
+        /* ===================================== */
+        /* EXPERIENCE LIST */
+        /* ===================================== */
+
+        <div
+          style={{
+            paddingTop: "20px",
+          }}
+        >
+          {data.map(
+            (experience, index) => (
+              <div
+                key={index}
+                style={{
+                  marginBottom:
+                    "20px",
+                  border:
+                    "1px solid #DFDACC",
+                  background:
+                    "#FFFFFF",
+                }}
+              >
+                {/* EXPERIENCE HEADER */}
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems:
+                      "center",
+                    justifyContent:
+                      "space-between",
+                    padding:
+                      "12px 14px",
+                    borderBottom:
+                      "1px solid #DFDACC",
+                    background:
+                      "#F7F5EF",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems:
+                        "center",
+                      gap: "9px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily:
+                          "'IBM Plex Mono', monospace",
+                        fontSize: "9px",
+                        color:
+                          "#C63B26",
+                      }}
+                    >
+                      0
+                      {index + 1}
+                    </span>
+
+                    <span
+                      style={{
+                        fontFamily:
+                          "'IBM Plex Mono', monospace",
+                        fontSize: "9px",
+                        textTransform:
+                          "uppercase",
+                        letterSpacing:
+                          ".05em",
+                        color:
+                          "#5B6070",
+                      }}
+                    >
+                      Experience
+                    </span>
+                  </div>
+
+                  {/* DELETE */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeExperience(
+                        index
+                      )
+                    }
+                    style={{
+                      border: "none",
+                      background:
+                        "transparent",
+                      color:
+                        "#9A4B40",
+                      cursor:
+                        "pointer",
+                      padding:
+                        "4px",
+                    }}
+                    title="Remove experience"
+                  >
+                    <Trash2
+                      size={14}
+                    />
+                  </button>
+                </div>
+
+                {/* EXPERIENCE BODY */}
+
+                <div
+                  style={{
+                    padding: "15px",
+                  }}
+                >
+                  {/* COMPANY + POSITION */}
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "1fr 1fr",
+                      gap: "12px",
+                    }}
+                  >
+                    {/* COMPANY */}
+
+                    <div>
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Company Name
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          experience.company ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          updateExperience(
+                            index,
+                            "company",
+                            e.target
+                              .value
+                          )
+                        }
+                        placeholder="Company Name"
+                        style={{
+                          width: "100%",
+                          height:
+                            "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            "#FFFFFF",
+                          color:
+                            "#171B24",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
+                    </div>
+
+                    {/* POSITION */}
+
+                    <div>
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Job Title
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          experience.position ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          updateExperience(
+                            index,
+                            "position",
+                            e.target
+                              .value
+                          )
+                        }
+                        placeholder="Job title"
+                        style={{
+                          width: "100%",
+                          height:
+                            "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            "#FFFFFF",
+                          color:
+                            "#171B24",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* DATES */}
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "1fr 1fr",
+                      gap: "12px",
+                      marginTop:
+                        "15px",
+                    }}
+                  >
+                    {/* START */}
+
+                    <div>
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Start Date
+                      </label>
+
+                      <input
+                        type="month"
+                        value={
+                          experience.start_date ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          updateExperience(
+                            index,
+                            "start_date",
+                            e.target
+                              .value
+                          )
+                        }
+                        style={{
+                          width: "100%",
+                          height:
+                            "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            "#FFFFFF",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
+                    </div>
+
+                    {/* END */}
+
+                    <div>
+                      <label
+                        style={{
+                          display:
+                            "block",
+                          marginBottom:
+                            "6px",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        End Date
+                      </label>
+
+                      <input
+                        type="month"
+                        value={
+                          experience.end_date ||
+                          ""
+                        }
+                        disabled={
+                          experience.is_current
+                        }
+                        onChange={(e) =>
+                          updateExperience(
+                            index,
+                            "end_date",
+                            e.target
+                              .value
+                          )
+                        }
+                        style={{
+                          width: "100%",
+                          height:
+                            "40px",
+                          boxSizing:
+                            "border-box",
+                          padding:
+                            "0 11px",
+                          border:
+                            "1px solid #CFCBBC",
+                          borderRadius:
+                            "0",
+                          outline:
+                            "none",
+                          background:
+                            experience.is_current
+                              ? "#F1EFE9"
+                              : "#FFFFFF",
+                          fontSize:
+                            "12px",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* CURRENT JOB */}
+
+                  <label
+                    style={{
+                      display:
+                        "flex",
+                      alignItems:
+                        "center",
+                      gap: "8px",
+                      marginTop:
+                        "13px",
+                      cursor:
+                        "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={
+                        experience.is_current ||
+                        false
+                      }
+                      onChange={(e) =>
+                        updateExperience(
+                          index,
+                          "is_current",
+                          e.target
+                            .checked
+                        )
+                      }
+                      style={{
+                        accentColor:
+                          "#C63B26",
+                        width: "13px",
+                        height: "13px",
+                      }}
+                    />
+
+                    <span
+                      style={{
+                        fontSize:
+                          "10px",
+                        color:
+                          "#5B6070",
+                      }}
+                    >
+                      I currently work
+                      here
+                    </span>
+                  </label>
+
+                  {/* DIVIDER */}
+
+                  <div
+                    style={{
+                      height: "1px",
+                      background:
+                        "#E5E2D9",
+                      margin:
+                        "17px 0",
+                    }}
+                  />
+
+                  {/* DESCRIPTION */}
+
+                  <div>
+                    <div
+                      style={{
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        justifyContent:
+                          "space-between",
+                        marginBottom:
+                          "7px",
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".05em",
+                          color:
+                            "#5B6070",
+                        }}
+                      >
+                        Job Description
+                      </label>
+
+                      {/* AI ENHANCE */}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          generatingDescription(
+                            index
+                          )
+                        }
+                        disabled={
+                          generatingIndex ===
+                            index ||
+                          !experience.position ||
+                          !experience.company
+                        }
+                        style={{
+                          display:
+                            "inline-flex",
+                          alignItems:
+                            "center",
+                          gap: "6px",
+                          padding:
+                            "6px 9px",
+                          border:
+                            "1px solid #D8B8AD",
+                          background:
+                            "#F4EDE7",
+                          color:
+                            "#C63B26",
+                          fontFamily:
+                            "'IBM Plex Mono', monospace",
+                          fontSize: "8px",
+                          textTransform:
+                            "uppercase",
+                          letterSpacing:
+                            ".03em",
+                          cursor:
+                            "pointer",
+                          opacity:
+                            generatingIndex ===
+                              index ||
+                            !experience.position ||
+                            !experience.company
+                              ? 0.5
+                              : 1,
+                        }}
+                      >
+                        {generatingIndex ===
+                        index ? (
+                          <Loader2
+                            size={11}
+                            style={{
+                              animation:
+                                "spin 1s linear infinite",
+                            }}
+                          />
+                        ) : (
+                          <Sparkles
+                            size={11}
+                          />
+                        )}
+
+                        {generatingIndex ===
+                        index
+                          ? "Enhancing..."
+                          : "AI Enhance"}
+                      </button>
+                    </div>
+
+                    <textarea
+                      value={
+                        experience.description ||
+                        ""
+                      }
+                      onChange={(e) =>
+                        updateExperience(
+                          index,
+                          "description",
+                          e.target
+                            .value
+                        )
+                      }
+                      placeholder="Describe your key responsibilities and achievements..."
+                      style={{
+                        width: "100%",
+                        minHeight:
+                          "145px",
+                        boxSizing:
+                          "border-box",
+                        padding:
+                          "12px",
+                        border:
+                          "1px solid #CFCBBC",
+                        borderRadius:
+                          "0",
+                        outline:
+                          "none",
+                        resize:
+                          "vertical",
+                        background:
+                          "#FFFFFF",
+                        color:
+                          "#171B24",
+                        fontSize:
+                          "12px",
+                        lineHeight:
+                          1.65,
+                        fontFamily:
+                          "system-ui, sans-serif",
+                      }}
+                    />
+
+                    <p
+                      style={{
+                        margin:
+                          "6px 0 0",
+                        fontSize:
+                          "9px",
+                        color:
+                          "#8A8F9B",
+                      }}
+                    >
+                      Tip: Focus on
+                      achievements,
+                      responsibilities,
+                      and measurable
+                      results.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
+        </div>
+      )}
+
+      {/* ===================================== */}
+      {/* INLINE ANIMATION */}
+      {/* ===================================== */}
+
+      <style>
+        {`
+          @keyframes spin {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}
+      </style>
+    </div>
+  );
+};
+
+export default ExperienceForm;

@@ -165,7 +165,18 @@ export const loginUser = async (req, res) => {
 
         
 
-        const user = await User.findOne({ email })
+        user = await User.findOne({
+  email: normalizedEmail,
+});
+
+if (user) {
+  user.googleId = profile.id;
+  user.isVerified = true;
+
+  await user.save();
+
+  return done(null, user);
+}
 
         if (!user) {
             return res.status(400).json({ message: "Invalid email or password" })
@@ -225,6 +236,57 @@ function registerfailedLoginAttempt(email){
 
     loginAttempts.set(email, attempt)
 }
+
+// ==========================================
+// GOOGLE LOGIN
+// ==========================================
+
+export const googleCallback = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const token = generateToken(user._id);
+
+    user.password = undefined;
+
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/oauth-success?token=${token}`
+    );
+
+  } catch (error) {
+    console.error("Google callback error:", error);
+
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/login?error=google_failed`
+    );
+  }
+};
+
+
+// ==========================================
+// GITHUB LOGIN
+// ==========================================
+
+export const githubCallback = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const token = generateToken(user._id);
+
+    user.password = undefined;
+
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/oauth-success?token=${token}`
+    );
+
+  } catch (error) {
+    console.error("GitHub callback error:", error);
+
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/login?error=github_failed`
+    );
+  }
+};
 
 
 

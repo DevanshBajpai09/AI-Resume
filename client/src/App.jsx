@@ -11,6 +11,9 @@ import InternetStatusPopup from "./Component/InternetStatusPopup";
 import PageLoader from "./Component/skeleton/PageLoader";
 import Portfolio from "./pages/Portfolio";
 import socket from "./configs/socket";
+import OAuthSuccess from "./pages/OAuthSuccess";
+import ProtectedRoute from "./pages/ProtectedRoute";
+
 
 
 
@@ -114,14 +117,21 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/try_demo" element={<TryDemo />} />
           <Route path="/login" element={<Login />} />
+          <Route
+    path="/oauth-success"
+    element={<OAuthSuccess />}
+  />
 
           {/* Protected Layout */}
+          <Route element={<ProtectedRoute />}>
+          
           <Route path="app" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="builder/:resumeId" element={<ResumeBuilder />} />
             <Route path="transactions" element={<Transactions />} />
             <Route path="profile" element={<Profile />} />
             <Route path="analytics" element={<Analytics />} />
+          </Route>
           </Route>
 
             <Route path="portfolio/:resumeId" element={<Portfolio />} />
