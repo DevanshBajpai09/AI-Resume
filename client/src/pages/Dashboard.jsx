@@ -27,6 +27,9 @@ import Navbar from "../Component/Navbar";
 const Dashboard = () => {
   const [allresumes, setallResumes] =
     useState([]);
+    const [editPdfModal, setEditPdfModal] = useState(false);
+const [pdfFile, setPdfFile] = useState(null);
+const [pdfName, setPdfName] = useState("");
 
   const [CreateResume, setCreateResume] =
     useState(false);
@@ -65,6 +68,26 @@ const Dashboard = () => {
     );
 
   const navigate = useNavigate();
+ /* ========================================= */
+  /* EditPDF */
+  /* ========================================= */
+
+  const handleEditPdf = (e) => {
+  e.preventDefault();
+
+  if (!pdfFile) {
+    toast.error("Please select a PDF");
+    return;
+  }
+
+  const pdfId = crypto.randomUUID();
+
+  setEditPdfModal(false);
+  setPdfName("");
+  setPdfFile(null);
+
+  navigate(`/app/edit-pdf/${pdfId}`);
+};
 
   /* ========================================= */
   /* LOAD RESUMES */
@@ -415,7 +438,7 @@ const Dashboard = () => {
             style={{
               display: "grid",
               gridTemplateColumns:
-                "repeat(2, minmax(0, 1fr))",
+                "repeat(3, minmax(0, 1fr))",
               gap: "12px",
               maxWidth: "760px",
             }}
@@ -576,6 +599,73 @@ const Dashboard = () => {
                 }}
               />
             </button>
+            {/* EDIT PDF */}
+<button
+  type="button"
+  onClick={() => setEditPdfModal(true)}
+  style={{
+    background: "#FFFFFF",
+    color: "#171B24",
+    border: "1px solid #DFDACC",
+    minHeight: "145px",
+    padding: "22px",
+    textAlign: "left",
+    cursor: "pointer",
+    position: "relative",
+  }}
+  className="dashboard-action"
+>
+  <div
+    style={{
+      width: "35px",
+      height: "35px",
+      border: "1px solid #DFDACC",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: "20px",
+      color: "#C63B26",
+    }}
+  >
+    <FilePenLineIcon
+      size={17}
+      strokeWidth={1.5}
+    />
+  </div>
+
+  <div
+    style={{
+      fontFamily: "'Newsreader', serif",
+      fontSize: "24px",
+      fontWeight: 500,
+    }}
+  >
+    Edit PDF
+  </div>
+
+  <div
+    style={{
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: "8px",
+      color: "#8A8F9B",
+      textTransform: "uppercase",
+      marginTop: "5px",
+      letterSpacing: ".05em",
+    }}
+  >
+    Edit your PDF directly
+  </div>
+
+  <ArrowUpRight
+    size={17}
+    style={{
+      position: "absolute",
+      right: "20px",
+      top: "20px",
+      color: "#8A8F9B",
+    }}
+  />
+</button>
           </div>
         </section>
 
@@ -1407,6 +1497,276 @@ const Dashboard = () => {
       )}
 
       {/* ========================================= */}
+{/* EDIT PDF MODAL */}
+{/* ========================================= */}
+
+{editPdfModal && (
+  <div
+    onClick={() => {
+      setEditPdfModal(false);
+      setPdfName("");
+      setPdfFile(null);
+    }}
+    className="fixed inset-0 z-50 flex items-center justify-center p-5"
+    style={{
+      background: "rgba(23,27,36,.55)",
+      backdropFilter: "blur(5px)",
+    }}
+  >
+    <form
+      onSubmit={(e) => {
+        handleEditPdf(e)
+        e.preventDefault();
+
+        if (!pdfFile) {
+          toast.error("Please select a PDF");
+          return;
+        }
+
+        // Later we'll connect this to the PDF editor backend
+        console.log({
+          name: pdfName,
+          file: pdfFile,
+        });
+
+        // Example:
+        // navigate("/app/pdf-editor");
+
+      }}
+       
+  onClick={(e) => e.stopPropagation()}
+      style={{
+        width: "100%",
+        maxWidth: "450px",
+        background: "#FBFAF6",
+        border: "1px solid #DFDACC",
+      }}
+    >
+      {/* HEADER */}
+      <div
+        style={{
+          padding: "17px 20px",
+          borderBottom: "1px solid #DFDACC",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: "8px",
+              color: "#C63B26",
+              textTransform: "uppercase",
+              letterSpacing: ".08em",
+            }}
+          >
+            PDF editor
+          </div>
+
+          <h2
+            style={{
+              fontFamily: "'Newsreader', serif",
+              fontSize: "25px",
+              fontWeight: 500,
+              margin: "3px 0 0",
+            }}
+          >
+            Edit PDF
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setEditPdfModal(false);
+            setPdfName("");
+            setPdfFile(null);
+          }}
+          style={{
+            width: "29px",
+            height: "29px",
+            border: "1px solid #DFDACC",
+            background: "transparent",
+            cursor: "pointer",
+            color: "#5B6070",
+          }}
+        >
+          <XIcon size={14} />
+        </button>
+      </div>
+
+      {/* BODY */}
+      <div
+        style={{
+          padding: "22px",
+        }}
+      >
+        {/* PDF NAME */}
+        <label
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: "8px",
+            color: "#5B6070",
+            textTransform: "uppercase",
+            letterSpacing: ".07em",
+          }}
+        >
+          PDF name
+        </label>
+
+        <input
+          autoFocus
+          type="text"
+          value={pdfName}
+          onChange={(e) => setPdfName(e.target.value)}
+          placeholder="e.g. My Resume"
+          required
+          style={{
+            width: "100%",
+            height: "45px",
+            marginTop: "8px",
+            padding: "0 13px",
+            border: "1px solid #CFCBC0",
+            background: "#FFFFFF",
+            outline: "none",
+            fontSize: "13px",
+            color: "#171B24",
+          }}
+        />
+
+        {/* PDF UPLOAD */}
+        <label
+          htmlFor="edit-pdf-input"
+          style={{
+            display: "block",
+            marginTop: "17px",
+            border: "1px dashed #CFCBC0",
+            background: "#FFFFFF",
+            minHeight: "150px",
+            cursor: "pointer",
+          }}
+        >
+          <div
+            style={{
+              minHeight: "150px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              color: pdfFile ? "#2D7A50" : "#8A8F9B",
+              padding: "20px",
+              textAlign: "center",
+            }}
+          >
+            {pdfFile ? (
+              <>
+                <FileText
+                  size={28}
+                  strokeWidth={1.2}
+                />
+
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "12px",
+                    maxWidth: "90%",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {pdfFile.name}
+                </p>
+
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: "7px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  PDF selected
+                </span>
+              </>
+            ) : (
+              <>
+                <UploadCloud
+                  size={29}
+                  strokeWidth={1}
+                />
+
+                <p
+                  style={{
+                    margin: 0,
+                    fontFamily: "'Newsreader', serif",
+                    fontSize: "20px",
+                    color: "#5B6070",
+                  }}
+                >
+                  Choose your PDF
+                </p>
+
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: "7px",
+                    color: "#9A9DA6",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Upload a PDF to start editing
+                </span>
+              </>
+            )}
+          </div>
+        </label>
+
+        <input
+          id="edit-pdf-input"
+          type="file"
+          accept="application/pdf,.pdf"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+
+            if (!file) return;
+
+            if (file.type !== "application/pdf") {
+              toast.error("Please select a PDF file");
+              return;
+            }
+
+            setPdfFile(file);
+          }}
+          hidden
+        />
+
+        {/* CONTINUE */}
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            height: "43px",
+            marginTop: "14px",
+            background: "#171B24",
+            border: "1px solid #171B24",
+            color: "#FFFFFF",
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: "8px",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+            cursor: "pointer",
+          }}
+        >
+          Continue to editor
+        </button>
+      </div>
+    </form>
+  </div>
+)}
+
+      {/* ========================================= */}
       {/* EDIT TITLE MODAL */}
       {/* ========================================= */}
 
@@ -1740,6 +2100,11 @@ const Dashboard = () => {
         .resume-card:hover .card-actions {
           opacity: 1;
         }
+          @media (max-width: 1000px) {
+  .dashboard-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
 
         @media (max-width: 900px) {
           .resume-grid {
@@ -1750,8 +2115,8 @@ const Dashboard = () => {
 
         @media (max-width: 650px) {
           .dashboard-actions {
-            grid-template-columns: 1fr !important;
-          }
+    grid-template-columns: 1fr !important;
+  }
 
           .resume-grid {
             grid-template-columns:

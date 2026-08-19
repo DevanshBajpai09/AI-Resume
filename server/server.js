@@ -12,6 +12,7 @@ import {Server} from "socket.io"
 import http from "http"
 import notificationRouter from "./routes/notificationRoute.js";
 import passport from "./config/passport.js";
+import pdfRoutes from "./routes/pdfRoute.js";
 
 dotenv.config()
 
@@ -58,6 +59,7 @@ app.use("/api/ai",aiRouter)
 app.use("/api/payment",paymentRouter)
 app.use("/api/analytics",analyticsRouter)
 app.use("/api/notifications", notificationRouter)
+app.use("/api/pdf", pdfRoutes);
 
 
 

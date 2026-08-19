@@ -17,6 +17,7 @@ import ProtectedRoute from "./pages/ProtectedRoute";
 
 
 
+
 /* ---------------- LAZY ROUTES ---------------- */
 
 const Home = lazy(() => import("./pages/Home"));
@@ -29,6 +30,7 @@ const ResumeBuilder = lazy(() => import("./pages/ResumeBuilder"));
 const Transactions = lazy(() => import("./pages/Transactions"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const EditPdf = lazy(() => import("./pages/EditPdf"));
 
 const Preview = lazy(() => import("./pages/Preview"));
 
@@ -128,6 +130,7 @@ const App = () => {
           <Route path="app" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="builder/:resumeId" element={<ResumeBuilder />} />
+            <Route path="edit-pdf/:id" element={<EditPdf />} />
             <Route path="transactions" element={<Transactions />} />
             <Route path="profile" element={<Profile />} />
             <Route path="analytics" element={<Analytics />} />
